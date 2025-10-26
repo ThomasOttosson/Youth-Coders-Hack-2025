@@ -12,7 +12,16 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 
-from . import env
+#import dj_database_url
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+SECRET_KEY = os.environ.get('SECRET_KEY', 'fallback-secret-key')
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+
+#from . import env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,14 +30,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY =  os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
 ALLOWED_HOSTS = ['*']
 
-DEBUG= os.environ.get('DEBUG') == 'False'
 
 # Application definition
 
@@ -85,7 +91,7 @@ WSGI_APPLICATION = 'haha.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE':  os.environ.get('DB_ENGINE'),
-        'NAME': os.environ.get('DB_NAME'),
+        'NAME': str(BASE_DIR / os.environ.get('DB_NAME')),
     }
 }
 
