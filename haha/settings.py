@@ -171,16 +171,7 @@ cloudinary.config(
     api_secret=os.getenv('CLOUDINARY_API_SECRET')
 )
 
-print(f"{cloudinary.config}")
-print("Cloud at Work")
-print(os.getenv("CLOUDINARY_CLOUD_NAME"))
 
-import cloudinary
-import cloudinary_storage
-
-# CLOUDINARY_URL = os.getenv("CLOUDINARY_URL")
-
-# print(f"URL: {CLOUDINARY_URL}")
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
