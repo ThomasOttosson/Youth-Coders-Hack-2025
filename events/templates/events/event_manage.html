@@ -1,0 +1,539 @@
+<!-- templates/events/event_manage.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage {{ event.title }} - HAHA{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'events_list' %}">Events</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'event_detail' event.id %}">{{ event.title }}</a></li>
+                    <li class="breadcrumb-item active">Manage Event</li>
+                </ol>
+            </nav>
+            
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-2">Manage Event</h1>
+                    <p class="text-muted mb-0">Manage attendees and settings for "{{ event.title }}"</p>
+                </div>
+                <div class="btn-group">
+                    <a href="{% url 'event_detail' event.id %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-eye me-2"></i>View Event
+                    </a>
+                    <a href="{% url 'event_edit' event.id %}" class="btn btn-outline-primary">
+                        <i class="fas fa-edit me-2"></i>Edit Event
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card stat-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                    <h3 class="text-primary mb-1">{{ attendee_count }}</h3>
+                    <small class="text-muted">Attendees</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card stat-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-clock fa-2x text-warning mb-2"></i>
+                    <h3 class="text-warning mb-1">{{ pending_requests.count }}</h3>
+                    <small class="text-muted">Pending Requests</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card stat-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-tachometer-alt fa-2x text-info mb-2"></i>
+                    <h3 class="text-info mb-1">{{ capacity_percentage|floatformat:0 }}%</h3>
+                    <small class="text-muted">Capacity Used</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card stat-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-calendar-day fa-2x text-success mb-2"></i>
+                    <h3 class="text-success mb-1">{{ event.days_until }}</h3>
+                    <small class="text-muted">Days Until Event</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Left Column - Attendee Management -->
+        <div class="col-lg-8">
+            <!-- Capacity Progress Bar -->
+            {% if event.max_attendees %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Event Capacity</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Attendance Progress</span>
+                        <span class="text-muted">{{ attendee_count }} / {{ event.max_attendees }}</span>
+                    </div>
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar {% if capacity_percentage >= 90 %}bg-danger{% elif capacity_percentage >= 75 %}bg-warning{% else %}bg-success{% endif %}" 
+                             role="progressbar" style="width: {{ capacity_percentage }}%;" 
+                             aria-valuenow="{{ capacity_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                            {{ capacity_percentage|floatformat:0 }}%
+                        </div>
+                    </div>
+                    <small class="text-muted mt-2 d-block">
+                        {% if capacity_percentage >= 90 %}
+                            <i class="fas fa-exclamation-triangle text-danger me-1"></i>
+                            Event is almost full!
+                        {% elif capacity_percentage >= 75 %}
+                            <i class="fas fa-info-circle text-warning me-1"></i>
+                            Event is filling up quickly
+                        {% else %}
+                            <i class="fas fa-check-circle text-success me-1"></i>
+                            Plenty of spots available
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Tabs Navigation -->
+            <div class="card">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs" id="manageTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="attendees-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#attendees" type="button">
+                                <i class="fas fa-users me-2"></i>
+                                Attendees
+                                {% if attendees %}
+                                <span class="badge bg-success ms-1">{{ attendees.count }}</span>
+                                {% endif %}
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="pending-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#pending" type="button">
+                                <i class="fas fa-user-clock me-2"></i>
+                                Pending Requests
+                                {% if pending_requests %}
+                                <span class="badge bg-warning ms-1">{{ pending_requests.count }}</span>
+                                {% endif %}
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card-body">
+                    <div class="tab-content" id="manageTabsContent">
+                        <!-- Attendees Tab -->
+                        <div class="tab-pane fade show active" id="attendees" role="tabpanel">
+                            {% if attendees %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>User</th>
+                                            <th>Joined</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for attendance in attendees %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    {% if attendance.user.avatar %}
+                                                        <img src="{{ attendance.user.avatar.url }}" 
+                                                             alt="{{ attendance.user.username }}" 
+                                                             class="rounded-circle me-3" width="40" height="40">
+                                                    {% else %}
+                                                        <img src="{% static 'images/default-avatar.png' %}" 
+                                                             alt="{{ attendance.user.username }}" 
+                                                             class="rounded-circle me-3" width="40" height="40">
+                                                    {% endif %}
+                                                    <div>
+                                                        <strong>{{ attendance.user.username }}</strong>
+                                                        {% if attendance.user.get_full_name %}
+                                                        <br>
+                                                        <small class="text-muted">{{ attendance.user.get_full_name }}</small>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">
+                                                    {{ attendance.created_at|date:"M j, Y" }}
+                                                </small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check me-1"></i>Confirmed
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="{% url 'profile' attendance.user.username %}" 
+                                                       class="btn btn-outline-primary" title="View Profile">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-outline-danger" 
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#removeAttendeeModal{{ attendance.id }}"
+                                                            title="Remove Attendee">
+                                                        <i class="fas fa-user-times"></i>
+                                                    </button>
+                                                </div>
+
+                                                <!-- Remove Attendee Modal -->
+                                                <div class="modal fade" id="removeAttendeeModal{{ attendance.id }}" tabindex="-1">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title text-danger">
+                                                                    <i class="fas fa-user-times me-2"></i>
+                                                                    Remove Attendee
+                                                                </h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <p>Are you sure you want to remove <strong>{{ attendance.user.username }}</strong> from this event?</p>
+                                                                <p class="text-muted">They will be notified that they have been removed from "{{ event.title }}".</p>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                                <form method="post" action="{% url 'remove_attendee' event.id attendance.user.id %}">
+                                                                    {% csrf_token %}
+                                                                    <button type="submit" class="btn btn-danger">
+                                                                        <i class="fas fa-user-times me-2"></i>Remove Attendee
+                                                                    </button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                <h5>No Attendees Yet</h5>
+                                <p class="text-muted">No one has joined your event yet. Start by inviting some friends!</p>
+                                <a href="{% url 'event_invite' event.id %}" class="btn btn-haha">
+                                    <i class="fas fa-user-plus me-2"></i>Invite Friends
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Pending Requests Tab -->
+                        <div class="tab-pane fade" id="pending" role="tabpanel">
+                            {% if pending_requests %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>User</th>
+                                            <th>Requested</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for attendance in pending_requests %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    {% if attendance.user.avatar %}
+                                                        <img src="{{ attendance.user.avatar.url }}" 
+                                                             alt="{{ attendance.user.username }}" 
+                                                             class="rounded-circle me-3" width="40" height="40">
+                                                    {% else %}
+                                                        <img src="{% static 'images/default-avatar.png' %}" 
+                                                             alt="{{ attendance.user.username }}" 
+                                                             class="rounded-circle me-3" width="40" height="40">
+                                                    {% endif %}
+                                                    <div>
+                                                        <strong>{{ attendance.user.username }}</strong>
+                                                        {% if attendance.user.get_full_name %}
+                                                        <br>
+                                                        <small class="text-muted">{{ attendance.user.get_full_name }}</small>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">
+                                                    {{ attendance.created_at|timesince }} ago
+                                                </small>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <form method="post" action="{% url 'approve_attendee' event.id attendance.user.id %}" class="d-inline">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-success" title="Approve">
+                                                            <i class="fas fa-check"></i> Approve
+                                                        </button>
+                                                    </form>
+                                                    <form method="post" action="{% url 'reject_attendee' event.id attendance.user.id %}" class="d-inline">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-outline-danger" title="Reject">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                <h5>No Pending Requests</h5>
+                                <p class="text-muted">You don't have any pending attendance requests at the moment.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Quick Actions & Event Info -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'event_invite' event.id %}" class="btn btn-haha">
+                            <i class="fas fa-user-plus me-2"></i>Invite More People
+                        </a>
+                        <a href="{% url 'event_edit' event.id %}" class="btn btn-outline-primary">
+                            <i class="fas fa-edit me-2"></i>Edit Event Details
+                        </a>
+                        <a href="{% url 'event_delete_confirm' event.id %}" class="btn btn-outline-danger">
+                            <i class="fas fa-trash me-2"></i>Delete Event
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Event Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Event Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="event-info">
+                        <div class="info-item mb-3">
+                            <strong><i class="fas fa-calendar me-2 text-primary"></i>Date & Time</strong>
+                            <p class="mb-0">{{ event.start_time|date:"F j, Y" }} at {{ event.start_time|date:"g:i A" }}</p>
+                        </div>
+                        <div class="info-item mb-3">
+                            <strong><i class="fas fa-map-marker-alt me-2 text-danger"></i>Location</strong>
+                            <p class="mb-0">{{ event.location }}</p>
+                        </div>
+                        <div class="info-item mb-3">
+                            <strong><i class="fas fa-users me-2 text-success"></i>Capacity</strong>
+                            <p class="mb-0">
+                                {% if event.max_attendees %}
+                                    {{ attendee_count }} / {{ event.max_attendees }} attendees
+                                {% else %}
+                                    Unlimited attendees
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="info-item">
+                            <strong><i class="fas fa-globe me-2 text-info"></i>Privacy</strong>
+                            <p class="mb-0">
+                                <span class="badge {% if event.privacy == 'public' %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {{ event.privacy|title }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Export Options -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Export Data</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">Download attendee information for your records.</p>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-secondary" onclick="exportAttendees('csv')">
+                            <i class="fas fa-file-csv me-2"></i>Export as CSV
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="exportAttendees('pdf')">
+                            <i class="fas fa-file-pdf me-2"></i>Export as PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .nav-tabs .nav-link {
+        border: none;
+        border-bottom: 3px solid transparent;
+        color: #6c757d;
+        font-weight: 500;
+        padding: 12px 20px;
+        transition: all 0.3s ease;
+    }
+
+    .nav-tabs .nav-link.active {
+        border-bottom-color: var(--haha-orange);
+        color: var(--haha-orange);
+        background: transparent;
+    }
+
+    .nav-tabs .nav-link:hover:not(.active) {
+        border-bottom-color: #dee2e6;
+        color: var(--haha-dark);
+    }
+
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        color: #495057;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-item {
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #f8f9fa;
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .progress {
+        border-radius: 10px;
+    }
+
+    .progress-bar {
+        border-radius: 10px;
+        font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+        .nav-tabs .nav-link {
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+        
+        .btn-group-sm .btn {
+            padding: 0.25rem 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Tab persistence
+        const manageTabs = document.getElementById('manageTabs');
+        if (manageTabs) {
+            manageTabs.addEventListener('show.bs.tab', function(event) {
+                const tabId = event.target.getAttribute('data-bs-target');
+                localStorage.setItem('activeManageTab', tabId);
+            });
+
+            // Restore active tab
+            const activeTab = localStorage.getItem('activeManageTab');
+            if (activeTab) {
+                const tabTrigger = document.querySelector(`[data-bs-target="${activeTab}"]`);
+                if (tabTrigger) {
+                    new bootstrap.Tab(tabTrigger).show();
+                }
+            }
+        }
+
+        // Auto-refresh pending requests tab
+        if (document.getElementById('pending-tab').classList.contains('active')) {
+            setTimeout(() => {
+                window.location.reload();
+            }, 30000); // Refresh every 30 seconds
+        }
+    });
+
+    function exportAttendees(format) {
+        // Show loading state
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Exporting...';
+        button.disabled = true;
+
+        // Simulate export (you'll need to implement this on the backend)
+        setTimeout(() => {
+            alert(`Exporting attendees as ${format.toUpperCase()}... This feature would generate a downloadable file.`);
+            button.innerHTML = originalText;
+            button.disabled = false;
+        }, 1000);
+    }
+
+    // Search functionality for attendees table
+    function searchAttendees() {
+        const input = document.getElementById('searchAttendees');
+        const filter = input.value.toLowerCase();
+        const table = document.querySelector('.table tbody');
+        const rows = table.getElementsByTagName('tr');
+
+        for (let i = 0; i < rows.length; i++) {
+            const username = rows[i].getElementsByTagName('td')[0].textContent.toLowerCase();
+            if (username.includes(filter)) {
+                rows[i].style.display = '';
+            } else {
+                rows[i].style.display = 'none';
+            }
+        }
+    }
+</script>
+{% endblock %}

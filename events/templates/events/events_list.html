@@ -1,0 +1,361 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Events - HAHA{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-5 fw-bold">Find Your Next Party</h1>
+                <p class="lead mb-4">Discover amazing events happening near you or create your own.</p>
+                <form method="get" class="search-box">
+                    <input type="text" name="search" class="form-control form-control-lg" 
+                           placeholder="Search events, locations, themes..." 
+                           value="{{ current_filters.search }}">
+                    <button type="submit" class="btn btn-haha"><i class="fas fa-search"></i></button>
+                </form>
+            </div>
+            <div class="col-lg-4 text-center">
+                <img src="{% static 'images/hero-illustration.jpeg' %}" alt="Party Illustration" class="img-fluid rounded">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<div class="container">
+    <div class="row">
+        <!-- Filters Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <form method="get" id="filterForm">
+                <div class="filter-sidebar sticky-top">
+                    <h5 class="section-title">Filters</h5>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Date</label>
+                        <select name="date" class="form-select" onchange="this.form.submit()">
+                            <option value="">Any date</option>
+                            <option value="today" {% if current_filters.date == 'today' %}selected{% endif %}>Today</option>
+                            <option value="tomorrow" {% if current_filters.date == 'tomorrow' %}selected{% endif %}>Tomorrow</option>
+                            <option value="weekend" {% if current_filters.date == 'weekend' %}selected{% endif %}>This weekend</option>
+                            <option value="week" {% if current_filters.date == 'week' %}selected{% endif %}>Next week</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Category</label>
+                        <select name="category" class="form-select" onchange="this.form.submit()">
+                            <option value="all">All Categories</option>
+                            {% for category in categories %}
+                            <option value="{{ category.name }}" {% if current_filters.category == category.name %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Price</label>
+                        <select name="price" class="form-select" onchange="this.form.submit()">
+                            <option value="">Any price</option>
+                            <option value="free" {% if current_filters.price == 'free' %}selected{% endif %}>Free</option>
+                            <option value="under_20" {% if current_filters.price == 'under_20' %}selected{% endif %}>Under $20</option>
+                            <option value="20_50" {% if current_filters.price == '20_50' %}selected{% endif %}>$20 - $50</option>
+                            <option value="over_50" {% if current_filters.price == 'over_50' %}selected{% endif %}>Over $50</option>
+                        </select>
+                    </div>
+                    
+                    <input type="hidden" name="sort" value="{{ current_filters.sort }}">
+                    <input type="hidden" name="search" value="{{ current_filters.search }}">
+                    
+                    <button type="submit" class="btn btn-haha w-100">Apply Filters</button>
+                    <a href="{% url 'events_list' %}" class="btn btn-outline-secondary w-100 mt-2">Reset</a>
+                </div>
+            </form>
+            
+            <!-- Trending Events -->
+            {% if trending_events %}
+            <div class="filter-sidebar">
+                <h5 class="section-title">Trending Events</h5>
+                
+                {% for event in trending_events %}
+                <div class="d-flex mb-3">
+                    <div class="event-date me-3">
+                        <div class="month">{{ event.start_time|date:"M"|upper }}</div>
+                        <div class="day">{{ event.start_time|date:"d" }}</div>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">{{ event.title }}</h6>
+                        <p class="text-muted mb-0"><small>{{ event.location }}</small></p>
+                        <span class="badge event-badge">{{ event.attendees_count }} attending</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Events Listing -->
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="section-title mb-0">
+                    {% if current_filters.search %}
+                    Search Results for "{{ current_filters.search }}"
+                    {% else %}
+                    Upcoming Events
+                    {% endif %}
+                    <small class="text-muted fs-6">({{ events.count }} events)</small>
+                </h3>
+                <div class="d-flex">
+                    <div class="dropdown me-2">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-sort me-1"></i> 
+                            {% if current_filters.sort == 'popular' %}Most Popular
+                            {% elif current_filters.sort == 'latest' %}Latest
+                            {% elif current_filters.sort == 'nearest' %}Nearest
+                            {% else %}Soonest{% endif %}
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="?{% if current_filters.search %}search={{ current_filters.search }}&{% endif %}{% if current_filters.category %}category={{ current_filters.category }}&{% endif %}{% if current_filters.date %}date={{ current_filters.date }}&{% endif %}{% if current_filters.price %}price={{ current_filters.price }}&{% endif %}sort=start_time">Date (soonest)</a></li>
+                            <li><a class="dropdown-item" href="?{% if current_filters.search %}search={{ current_filters.search }}&{% endif %}{% if current_filters.category %}category={{ current_filters.category }}&{% endif %}{% if current_filters.date %}date={{ current_filters.date }}&{% endif %}{% if current_filters.price %}price={{ current_filters.price }}&{% endif %}sort=latest">Date (latest)</a></li>
+                            <li><a class="dropdown-item" href="?{% if current_filters.search %}search={{ current_filters.search }}&{% endif %}{% if current_filters.category %}category={{ current_filters.category }}&{% endif %}{% if current_filters.date %}date={{ current_filters.date }}&{% endif %}{% if current_filters.price %}price={{ current_filters.price }}&{% endif %}sort=popular">Most popular</a></li>
+                            <li><a class="dropdown-item" href="?{% if current_filters.search %}search={{ current_filters.search }}&{% endif %}{% if current_filters.category %}category={{ current_filters.category }}&{% endif %}{% if current_filters.date %}date={{ current_filters.date }}&{% endif %}{% if current_filters.price %}price={{ current_filters.price }}&{% endif %}sort=nearest">Nearest</a></li>
+                        </ul>
+                    </div>
+                    <div class="btn-group" role="group">
+                        <input type="radio" class="btn-check" name="viewMode" id="gridView" autocomplete="off" checked>
+                        <label class="btn btn-outline-secondary" for="gridView"><i class="fas fa-th"></i></label>
+                        
+                        <input type="radio" class="btn-check" name="viewMode" id="listView" autocomplete="off">
+                        <label class="btn btn-outline-secondary" for="listView"><i class="fas fa-list"></i></label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Events Grid/List -->
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3" id="eventsContainer">
+                {% for event in events %}
+                <div class="col mb-4 event-card-item">
+                    <div class="card event-card h-100">
+                        <div class="position-relative">
+                            {% if event.image %}
+                            <img src="{{ event.image.url }}" class="card-img-top event-image" alt="{{ event.title }}">
+                            {% else %}
+                            <img src="{% static 'images/event-placeholder.jpg' %}" class="card-img-top event-image" alt="{{ event.title }}">
+                            {% endif %}
+                            
+                            {% if event.attendees_count > 10 %}
+                            <span class="trending-badge">Popular</span>
+                            {% endif %}
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title">{{ event.title }}</h5>
+                                <span class="badge event-badge">
+                                    {% if event.price > 0 %}
+                                        ${{ event.price }}
+                                    {% else %}
+                                        Free
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <p class="card-text text-muted">{{ event.description|truncatewords:20 }}</p>
+                            
+                            <div class="event-stats">
+                                <span><i class="fas fa-calendar me-1"></i> {{ event.start_time|date:"M j, Y" }}</span>
+                                <span><i class="fas fa-users me-1"></i> {{ event.attendee_count }}/{{ event.max_attendees }}</span>
+                            </div>
+                            
+                            <div class="event-host mt-auto">
+                                <img src="{% if event.host.avatar %}{{ event.host.avatar.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}" 
+                                     alt="{{ event.host.username }}" class="host-avatar">
+                                <small class="text-muted">Hosted by {{ event.host.username }}</small>
+                            </div>
+                            
+                            <div class="event-actions mt-3">
+                                <a href="{% url 'event_detail' event.id %}" class="btn btn-haha btn-sm flex-grow-1">View Details</a>
+                                {% if user.is_authenticated and user != event.host %}
+                                    {% if event in user_attending_events %}
+                                    <form method="post" action="{% url 'event_leave' event.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-outline-secondary btn-sm" title="Leave event">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <form method="post" action="{% url 'event_join' event.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-outline-secondary btn-sm" title="Join event">
+                                            <i class="far fa-heart"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body py-5 text-center">
+                            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                            <h4>No Events Found</h4>
+                            <p class="text-muted">Try adjusting your filters or search terms.</p>
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'event_create' %}" class="btn btn-haha">Create the First Event</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Grid View Styles (Default) */
+    .event-card-item.grid-view {
+        /* Default Bootstrap grid behavior */
+    }
+
+    /* List View Styles */
+    .event-card-item.list-view {
+        width: 100%;
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .event-card.list-view {
+        flex-direction: row;
+        height: 200px;
+    }
+
+    .event-card.list-view .event-image {
+        width: 200px;
+        height: 200px;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+
+    .event-card.list-view .card-body {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    .event-card.list-view .event-stats {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .event-card.list-view .event-host {
+        margin-top: auto;
+    }
+
+    .event-card.list-view .event-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: auto;
+    }
+
+    /* Responsive adjustments for list view */
+    @media (max-width: 768px) {
+        .event-card.list-view {
+            flex-direction: column;
+            height: auto;
+        }
+
+        .event-card.list-view .event-image {
+            width: 100%;
+            height: 150px;
+        }
+    }
+
+    /* Smooth transitions */
+    .event-card-item {
+        transition: all 0.3s ease;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const gridView = document.getElementById('gridView');
+        const listView = document.getElementById('listView');
+        const eventsContainer = document.getElementById('eventsContainer');
+        const eventCards = document.querySelectorAll('.event-card-item');
+        const eventCardElements = document.querySelectorAll('.event-card');
+
+        // Set initial state
+        setGridView();
+
+        // Grid view event listener
+        gridView.addEventListener('change', function() {
+            if (this.checked) {
+                setGridView();
+            }
+        });
+
+        // List view event listener
+        listView.addEventListener('change', function() {
+            if (this.checked) {
+                setListView();
+            }
+        });
+
+        function setGridView() {
+            // Update container classes
+            eventsContainer.classList.remove('row-cols-1');
+            eventsContainer.classList.add('row-cols-1', 'row-cols-md-2', 'row-cols-lg-3');
+            
+            // Update individual cards
+            eventCards.forEach(card => {
+                card.classList.remove('list-view');
+                card.classList.add('grid-view');
+            });
+            
+            eventCardElements.forEach(card => {
+                card.classList.remove('list-view');
+            });
+        }
+
+        function setListView() {
+            // Update container classes
+            eventsContainer.classList.remove('row-cols-1', 'row-cols-md-2', 'row-cols-lg-3');
+            eventsContainer.classList.add('row-cols-1');
+            
+            // Update individual cards
+            eventCards.forEach(card => {
+                card.classList.remove('grid-view');
+                card.classList.add('list-view');
+            });
+            
+            eventCardElements.forEach(card => {
+                card.classList.add('list-view');
+            });
+        }
+
+        // Category filter buttons (existing functionality)
+        const categoryButtons = document.querySelectorAll('.category-btn');
+        categoryButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                categoryButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                const category = this.dataset.category;
+                document.querySelector('input[name="category"]').value = category;
+                document.getElementById('filterForm').submit();
+            });
+        });
+    });
+</script>
+{% endblock %}

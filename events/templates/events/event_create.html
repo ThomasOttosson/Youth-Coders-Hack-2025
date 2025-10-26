@@ -1,0 +1,710 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Event - HAHA{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-white">Home</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'events_list' %}" class="text-white">Events</a></li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">Create Event</li>
+                    </ol>
+                </nav>
+                <h1 class="display-5 fw-bold">Create Your Event</h1>
+                <p class="lead mb-0">Plan an amazing party and invite your friends to join the fun!</p>
+            </div>
+            <div class="col-lg-4 text-center">
+                <img src="{% static 'images/create-event-illustration.png' %}" alt="Create Event" class="img-fluid rounded">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Create Event Form -->
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="create-event-card">
+                <div class="create-event-header">
+                    <div class="create-event-icon">
+                        <i class="fas fa-calendar-plus"></i>
+                    </div>
+                    <h2 class="create-event-title">Create New Event</h2>
+                    <p class="create-event-subtitle">Fill in the details below to create your amazing event</p>
+                </div>
+                
+                <form method="post" enctype="multipart/form-data" id="eventForm" class="create-event-form">
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                    <div class="alert alert-danger auth-alert">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <div>
+                                <strong>Please correct the errors below:</strong>
+                                <ul class="mb-0 mt-1">
+                                    {% for field in form %}
+                                        {% for error in field.errors %}
+                                            <li>{{ field.label }}: {{ error }}</li>
+                                        {% endfor %}
+                                    {% endfor %}
+                                    {% for error in form.non_field_errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Basic Information Section -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <h4>Basic Information</h4>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    <label for="{{ form.title.id_for_label }}" class="form-label">
+                                        <i class="fas fa-heading me-2"></i>Event Title
+                                    </label>
+                                    {{ form.title }}
+                                    <div class="form-text">
+                                        <i class="fas fa-lightbulb me-1"></i>Choose a catchy name that will attract attendees
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.category.id_for_label }}" class="form-label">
+                                        <i class="fas fa-tag me-2"></i>Category
+                                    </label>
+                                    {{ form.category }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">
+                                <i class="fas fa-align-left me-2"></i>Event Description
+                            </label>
+                            {{ form.description }}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>Describe what attendees can expect from your event
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Date & Time Section -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="fas fa-clock me-2"></i>
+                            <h4>Date & Time</h4>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.start_date.id_for_label }}" class="form-label">
+                                        <i class="fas fa-calendar-day me-2"></i>Start Date
+                                    </label>
+                                    {{ form.start_date }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.start_time.id_for_label }}" class="form-label">
+                                        <i class="fas fa-clock me-2"></i>Start Time
+                                    </label>
+                                    {{ form.start_time }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.end_date.id_for_label }}" class="form-label">
+                                        <i class="fas fa-calendar-day me-2"></i>End Date
+                                    </label>
+                                    {{ form.end_date }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.end_time.id_for_label }}" class="form-label">
+                                        <i class="fas fa-clock me-2"></i>End Time
+                                    </label>
+                                    {{ form.end_time }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Location Section -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="fas fa-map-marker-alt me-2"></i>
+                            <h4>Location</h4>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.location.id_for_label }}" class="form-label">
+                                <i class="fas fa-location-arrow me-2"></i>Event Location
+                            </label>
+                            {{ form.location }}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>Provide the full address or specific venue name
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.location_details.id_for_label }}" class="form-label">
+                                <i class="fas fa-info-circle me-2"></i>Location Details
+                            </label>
+                            {{ form.location_details }}
+                            <div class="form-text">
+                                <i class="fas fa-lightbulb me-1"></i>Add helpful details like meeting point, parking info, or special instructions
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Event Settings Section -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="fas fa-cog me-2"></i>
+                            <h4>Event Settings</h4>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.max_attendees.id_for_label }}" class="form-label">
+                                        <i class="fas fa-users me-2"></i>Maximum Attendees
+                                    </label>
+                                    {{ form.max_attendees }}
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>Set a limit to manage your event size
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.price.id_for_label }}" class="form-label">
+                                        <i class="fas fa-dollar-sign me-2"></i>Price per Person
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        {{ form.price }}
+                                    </div>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>Set to 0 for free events
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-lock me-2"></i>Privacy Settings
+                            </label>
+                            <div class="privacy-options">
+                                {% for radio in form.privacy %}
+                                <div class="form-check privacy-option">
+                                    {{ radio.tag }}
+                                    <label class="form-check-label" for="{{ radio.id_for_label }}">
+                                        <div class="privacy-icon">
+                                            {% if radio.choice_label == 'Public' %}
+                                            <i class="fas fa-globe-americas"></i>
+                                            {% elif radio.choice_label == 'Private' %}
+                                            <i class="fas fa-lock"></i>
+                                            {% elif radio.choice_label == 'Invite Only' %}
+                                            <i class="fas fa-envelope"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div class="privacy-content">
+                                            <strong>{{ radio.choice_label }}</strong>
+                                            <small>
+                                                {% if radio.choice_label == 'Public' %}
+                                                Anyone can see and request to join
+                                                {% elif radio.choice_label == 'Private' %}
+                                                Only invited people can join
+                                                {% elif radio.choice_label == 'Invite Only' %}
+                                                People need invitation to join
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Additional Details Section -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="fas fa-palette me-2"></i>
+                            <h4>Additional Details</h4>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.theme.id_for_label }}" class="form-label">
+                                        <i class="fas fa-mask me-2"></i>Event Theme
+                                    </label>
+                                    {{ form.theme }}
+                                    <div class="form-text">
+                                        <i class="fas fa-lightbulb me-1"></i>e.g., Beach Party, 80s Retro, Masquerade Ball
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.image.id_for_label }}" class="form-label">
+                                        <i class="fas fa-image me-2"></i>Event Image
+                                    </label>
+                                    {{ form.image }}
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>Upload a compelling image for your event (optional)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.rules.id_for_label }}" class="form-label">
+                                <i class="fas fa-clipboard-list me-2"></i>Event Rules & Guidelines
+                            </label>
+                            {{ form.rules }}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>Specify any rules, dress code, or important guidelines for attendees
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-create-event btn-lg w-100">
+                            <i class="fas fa-rocket me-2"></i>Create Event
+                        </button>
+                        <a href="{% url 'events_list' %}" class="btn btn-outline-secondary btn-lg w-100 mt-2">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Tips Section -->
+<section class="container my-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="tips-card">
+                <h4 class="section-title">
+                    <i class="fas fa-lightbulb me-2"></i>Event Creation Tips
+                </h4>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="tip-item">
+                            <div class="tip-icon">
+                                <i class="fas fa-camera"></i>
+                            </div>
+                            <h5>Use Great Images</h5>
+                            <p>High-quality images can increase attendance by up to 50%.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="tip-item">
+                            <div class="tip-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <h5>Be Specific</h5>
+                            <p>Clear dates, times, and locations help attendees plan better.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="tip-item">
+                            <div class="tip-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <h5>Engage Early</h5>
+                            <p>Start conversations in the event chat to build excitement.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .create-event-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        padding: 40px;
+        margin-bottom: 30px;
+        border: 1px solid rgba(255, 107, 53, 0.1);
+    }
+
+    .create-event-header {
+        text-align: center;
+        margin-bottom: 40px;
+        padding-bottom: 30px;
+        border-bottom: 2px solid #f8f9fa;
+    }
+
+    .create-event-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, var(--haha-orange), var(--haha-orange-light));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        color: white;
+        font-size: 2rem;
+        box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+    }
+
+    .create-event-title {
+        font-weight: 700;
+        color: var(--haha-dark);
+        margin-bottom: 10px;
+        font-size: 2.2rem;
+    }
+
+    .create-event-subtitle {
+        color: #6c757d;
+        font-size: 1.1rem;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .form-section {
+        margin-bottom: 40px;
+        padding: 30px;
+        border-radius: 15px;
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid rgba(255, 107, 53, 0.2);
+    }
+
+    .section-header h4 {
+        margin: 0;
+        color: var(--haha-dark);
+        font-weight: 600;
+    }
+
+    .section-header i {
+        color: var(--haha-orange);
+        font-size: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: var(--haha-dark);
+        display: flex;
+        align-items: center;
+    }
+
+    .form-control, .form-select {
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--haha-orange);
+        box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.15);
+        background: white;
+    }
+
+    .form-text {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+    }
+
+    .privacy-options {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .privacy-option {
+        margin: 0;
+        padding: 20px;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .privacy-option:hover {
+        border-color: var(--haha-orange-light);
+        background: rgba(255, 107, 53, 0.02);
+    }
+
+    .privacy-option .form-check-input {
+        margin-top: 0;
+    }
+
+    .privacy-option .form-check-input:checked {
+        background-color: var(--haha-orange);
+        border-color: var(--haha-orange);
+    }
+
+    .privacy-option .form-check-label {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        cursor: pointer;
+    }
+
+    .privacy-icon {
+        width: 50px;
+        height: 50px;
+        background: rgba(255, 107, 53, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        color: var(--haha-orange);
+        font-size: 1.2rem;
+    }
+
+    .privacy-content {
+        flex: 1;
+    }
+
+    .privacy-content strong {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--haha-dark);
+    }
+
+    .privacy-content small {
+        color: #6c757d;
+        line-height: 1.4;
+    }
+
+    .input-group-text {
+        background-color: #f8f9fa;
+        border: 2px solid #e9ecef;
+        border-right: none;
+        border-radius: 12px 0 0 12px;
+    }
+
+    .input-group .form-control {
+        border-left: none;
+        border-radius: 0 12px 12px 0;
+    }
+
+    .form-actions {
+        margin-top: 40px;
+        text-align: center;
+    }
+
+    .btn-create-event {
+        background: linear-gradient(135deg, var(--haha-orange), var(--haha-orange-dark));
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 15px 30px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+    }
+
+    .btn-create-event:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+        color: white;
+    }
+
+    .tips-card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(255, 107, 53, 0.1);
+    }
+
+    .tip-item {
+        text-align: center;
+        padding: 20px;
+    }
+
+    .tip-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--haha-orange), var(--haha-orange-light));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .tip-item h5 {
+        color: var(--haha-dark);
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+
+    .tip-item p {
+        color: #6c757d;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    .auth-alert {
+        border-radius: 12px;
+        border: none;
+        padding: 16px 20px;
+        margin-bottom: 30px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .create-event-card {
+            padding: 25px 20px;
+            margin: 0 10px;
+        }
+
+        .create-event-title {
+            font-size: 1.8rem;
+        }
+
+        .form-section {
+            padding: 20px;
+        }
+
+        .privacy-option {
+            padding: 15px;
+        }
+
+        .privacy-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+            margin-right: 12px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .privacy-option .form-check-label {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .privacy-icon {
+            margin-right: 0;
+            margin-bottom: 10px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-update end date when start date changes
+        const startDateInput = document.getElementById('{{ form.start_date.id_for_label }}');
+        const endDateInput = document.getElementById('{{ form.end_date.id_for_label }}');
+        
+        if (startDateInput && endDateInput) {
+            startDateInput.addEventListener('change', function() {
+                if (!endDateInput.value || endDateInput.value < this.value) {
+                    endDateInput.value = this.value;
+                }
+            });
+        }
+        
+        // Image preview functionality
+        const imageInput = document.getElementById('{{ form.image.id_for_label }}');
+        if (imageInput) {
+            imageInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // You could add image preview functionality here
+                    console.log('Image selected:', file.name);
+                }
+            });
+        }
+        
+        // Real-time validation feedback
+        const formInputs = document.querySelectorAll('.form-control, .form-select');
+        formInputs.forEach(input => {
+            input.addEventListener('blur', function() {
+                if (this.value && this.value.trim() !== '') {
+                    this.classList.add('is-valid');
+                    this.classList.remove('is-invalid');
+                } else if (this.required) {
+                    this.classList.add('is-invalid');
+                    this.classList.remove('is-valid');
+                }
+            });
+        });
+        
+        // Character counter for description
+        const descriptionInput = document.getElementById('{{ form.description.id_for_label }}');
+        if (descriptionInput) {
+            const counter = document.createElement('div');
+            counter.className = 'form-text character-counter';
+            counter.innerHTML = '<i class="fas fa-text-height me-1"></i><span class="count">0</span>/500 characters';
+            descriptionInput.parentNode.appendChild(counter);
+            
+            descriptionInput.addEventListener('input', function() {
+                const count = this.value.length;
+                counter.querySelector('.count').textContent = count;
+                
+                if (count > 500) {
+                    counter.style.color = '#dc3545';
+                } else if (count > 400) {
+                    counter.style.color = '#ffc107';
+                } else {
+                    counter.style.color = '#6c757d';
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,1174 @@
+<!-- templates/events/event_detail.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ event.title }} - HAHA{% endblock %}
+
+{% block content %}
+<!-- Event Details Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-white">Home</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'events_list' %}" class="text-white">Events</a></li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">{{ event.title }}</li>
+                    </ol>
+                </nav>
+                <h1 class="display-5 fw-bold">{{ event.title }}</h1>
+                <div class="d-flex flex-wrap align-items-center gap-3 mt-3">
+                    <span class="badge bg-light text-dark fs-6">
+                        {% if event.price > 0 %}
+                            ${{ event.price }}
+                        {% else %}
+                            Free
+                        {% endif %}
+                    </span>
+                    <span class="text-white"><i class="fas fa-users me-1"></i> {{ event.attendee_count }}/{{ event.max_attendees }} attending</span>
+                    <span class="text-white"><i class="fas fa-map-marker-alt me-1"></i> {{ event.location }}</span>
+                    {% if event.theme %}
+                    <span class="badge bg-light text-dark"><i class="fas fa-mask me-1"></i> {{ event.theme }}</span>
+                    {% endif %}
+                </div>
+                
+                <!-- Event Chat Button in Header -->
+                {% if user.is_authenticated and is_attending or user == event.host %}
+                <div class="mt-3">
+                    <a href="{% url 'start_event_chat' event.id %}" class="btn btn-light">
+                        <i class="fas fa-comments me-2"></i> Open Event Chat
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="event-date d-inline-block">
+                    <div class="month">{{ event.start_time|date:"M"|upper }}</div>
+                    <div class="day">{{ event.start_time|date:"d" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<div class="container">
+    <div class="row">
+        <!-- Event Details -->
+        <div class="col-lg-8">
+            <!-- Event Image -->
+            <div class="card mb-4 event-image-card">
+                {% if event.image %}
+                <img src="{{ event.image.url }}" class="card-img-top event-image" alt="{{ event.title }}">
+                {% else %}
+                <img src="{% static 'images/event-placeholder.jpg' %}" class="card-img-top event-image" alt="{{ event.title }}">
+                {% endif %}
+                <div class="event-image-overlay">
+                    <div class="event-status-badges">
+                        {% if event.is_upcoming %}
+                        <span class="badge status-badge upcoming">
+                            <i class="fas fa-clock me-1"></i>Upcoming
+                        </span>
+                        {% endif %}
+                        {% if event.attendee_count > 10 %}
+                        <span class="badge status-badge popular">
+                            <i class="fas fa-fire me-1"></i>Popular
+                        </span>
+                        {% endif %}
+                        {% if event.privacy == 'private' %}
+                        <span class="badge status-badge private">
+                            <i class="fas fa-lock me-1"></i>Private
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Event Tabs -->
+            <ul class="nav nav-tabs mb-3 event-detail-tabs" id="eventTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="details-tab" data-bs-toggle="tab" data-bs-target="#details" type="button" role="tab">
+                        <i class="fas fa-info-circle me-2"></i>Details
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="attendees-tab" data-bs-toggle="tab" data-bs-target="#attendees" type="button" role="tab">
+                        <i class="fas fa-users me-2"></i>Attendees ({{ event.attendee_count }})
+                    </button>
+                </li>
+                {% if user == event.host %}
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="manage-tab" data-bs-toggle="tab" data-bs-target="#manage" type="button" role="tab">
+                        <i class="fas fa-cog me-2"></i>Manage Event
+                    </button>
+                </li>
+                {% endif %}
+            </ul>
+            
+            <div class="tab-content event-tab-content" id="eventTabsContent">
+                <!-- Details Tab -->
+                <div class="tab-pane fade show active" id="details" role="tabpanel">
+                    <div class="tab-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-info-circle me-2"></i>About This Event
+                        </h3>
+                        <div class="event-description">
+                            {{ event.description|linebreaks }}
+                        </div>
+                    </div>
+
+                    <div class="tab-section">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <div class="info-icon">
+                                        <i class="fas fa-calendar-alt"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1">Date & Time</h6>
+                                        <p class="mb-0">{{ event.start_time|date:"F j, Y" }} • {{ event.start_time|time:"g:i A" }}</p>
+                                        <small class="text-muted">Ends at {{ event.end_time|time:"g:i A" }}</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <div class="info-icon">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1">Location</h6>
+                                        <p class="mb-0">{{ event.location }}</p>
+                                        {% if event.location_details %}
+                                        <small class="text-muted">{{ event.location_details }}</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <div class="info-icon">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1">Attendees</h6>
+                                        <p class="mb-0">{{ event.attendee_count }} confirmed • {{ event.available_spots }} spots left</p>
+                                        <div class="progress mt-2" style="height: 6px;">
+                                            <div class="progress-bar bg-success" role="progressbar" 
+                                                 style="width: {% widthratio event.attendee_count event.max_attendees 100 %}%"
+                                                 aria-valuenow="{{ event.attendee_count }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="{{ event.max_attendees }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <div class="info-icon">
+                                        <i class="fas fa-tag"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1">Event Type</h6>
+                                        <p class="mb-0">
+                                            {% if event.category %}
+                                            {{ event.category.name }}
+                                            {% else %}
+                                            Social Gathering
+                                            {% endif %}
+                                        </p>
+                                        {% if event.theme %}
+                                        <small class="text-muted">Theme: {{ event.theme }}</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if event.rules %}
+                    <div class="tab-section">
+                        <h4 class="section-title">
+                            <i class="fas fa-clipboard-list me-2"></i>Event Rules & Guidelines
+                        </h4>
+                        <div class="rules-content">
+                            {{ event.rules|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="tab-section">
+                        <h4 class="section-title">
+                            <i class="fas fa-map-marked-alt me-2"></i>Location Map
+                        </h4>
+                        <div class="location-map">
+                            <div class="map-placeholder">
+                                <i class="fas fa-map fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">Map view of {{ event.location }}</p>
+                                <small class="text-muted">Interactive map would be displayed here</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Attendees Tab -->
+                <div class="tab-pane fade" id="attendees" role="tabpanel">
+                    <div class="tab-section">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h3 class="section-title mb-0">
+                                <i class="fas fa-users me-2"></i>Event Attendees
+                            </h3>
+                            {% if user == event.host %}
+                            <a href="{% url 'event_invite' event.id %}" class="btn btn-haha btn-sm"><i class="fas fa-user-plus me-1"></i>Invite Friends</a>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="attendees-count mb-4">
+                            <p class="mb-2">{{ event.attendee_count }} people are attending this event</p>
+                            <div class="attendee-avatars">
+                                {% for attendee in attendees|slice:":10" %}
+                                <img src="{% if attendee.user.avatar %}{{ attendee.user.avatar.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}" 
+                                     alt="{{ attendee.user.username }}" 
+                                     class="attendee-avatar"
+                                     title="{{ attendee.user.username }}">
+                                {% endfor %}
+                                {% if event.attendee_count > 10 %}
+                                <span class="attendee-avatar more-attendees">
+                                    +{{ event.attendee_count|add:"-10" }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Host Card -->
+                            <div class="col-md-6 mb-3">
+                                <div class="attendee-card host-card">
+                                    <div class="d-flex align-items-center">
+                                        <div class="attendee-avatar-container">
+                                            <img src="{% if event.host.avatar %}{{ event.host.avatar.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}" 
+                                                 alt="{{ event.host.username }}" 
+                                                 class="attendee-avatar-large">
+                                            <span class="host-badge" title="Event Host">
+                                                <i class="fas fa-crown"></i>
+                                            </span>
+                                        </div>
+                                        <div class="attendee-info">
+                                            <h6 class="mb-1">
+                                                <a href="{% url 'profile' username=event.host.username %}" class="text-decoration-none">
+                                                    {{ event.host.username }}
+                                                </a>
+                                            </h6>
+                                            <p class="text-muted mb-0"><small>Event Host</small></p>
+                                            <p class="text-muted mb-0 small">{{ event.host.bio|default:"Party enthusiast"|truncatewords:10 }}</p>
+                                        </div>
+                                    </div>
+                                    {% if user.is_authenticated and user != event.host %}
+                                    <a href="{% url 'start_direct_message' event.host.id %}" class="btn btn-outline-secondary btn-sm mt-2">
+                                        <i class="fas fa-envelope me-1"></i> Message
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Attendee Cards -->
+                            {% for attendee in attendees %}
+                            {% if attendee.user != event.host %}
+                            <div class="col-md-6 mb-3">
+                                <div class="attendee-card">
+                                    <div class="d-flex align-items-center">
+                                        <img src="{% if attendee.user.avatar %}{{ attendee.user.avatar.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}" 
+                                             alt="{{ attendee.user.username }}" 
+                                             class="attendee-avatar-large">
+                                        <div class="attendee-info">
+                                            <h6 class="mb-1">
+                                                <a href="{% url 'profile' username=attendee.user.username %}" class="text-decoration-none">
+                                                    {{ attendee.user.username }}
+                                                </a>
+                                            </h6>
+                                            <p class="text-muted mb-0 small">
+                                                {% if attendee.message %}
+                                                "{{ attendee.message }}"
+                                                {% else %}
+                                                Joined {{ attendee.joined_at|timesince }} ago
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {% if user.is_authenticated and user != attendee.user %}
+                                    <a href="{% url 'start_direct_message' attendee.user.id %}" class="btn btn-outline-secondary btn-sm mt-2">
+                                        <i class="fas fa-envelope me-1"></i> Message
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Manage Tab (Host Only) -->
+                {% if user == event.host %}
+                <div class="tab-pane fade" id="manage" role="tabpanel">
+                    <div class="tab-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-cog me-2"></i>Manage Your Event
+                        </h3>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card management-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <i class="fas fa-tasks me-2"></i>Event Actions
+                                        </h5>
+                                        <div class="d-grid gap-2">
+                                            <a href="{% url 'event_edit' event.id %}" class="btn btn-haha-outline text-start">
+                                                <i class="fas fa-edit me-2"></i> Edit Event Details
+                                            </a>
+                                            <a href="{% url 'event_invite' event.id %}" class="btn btn-haha-outline text-start">
+                                                <i class="fas fa-user-plus me-2"></i> Invite More People
+                                            </a>
+                                            <!-- Event Chat Button for Host -->
+                                            <a href="{% url 'start_event_chat' event.id %}" class="btn btn-haha-outline text-start">
+                                                <i class="fas fa-comments me-2"></i> Event Chat
+                                            </a>
+                                            <button class="btn btn-haha-outline text-start">
+                                                <i class="fas fa-bullhorn me-2"></i> Send Announcement
+                                            </button>
+                                            <button class="btn btn-haha-outline text-start">
+                                                <i class="fas fa-file-export me-2"></i> Export Attendee List
+                                            </button>
+                                            <a href="{% url 'event_delete_confirm' event.id %}" class="btn btn-danger text-start">
+                                                <i class="fas fa-trash me-2"></i> Cancel Event
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card management-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <i class="fas fa-chart-bar me-2"></i>Event Statistics
+                                        </h5>
+                                        <div class="event-stats-list">
+                                            <div class="stat-item">
+                                                <div class="stat-icon">
+                                                    <i class="fas fa-users"></i>
+                                                </div>
+                                                <div class="stat-content">
+                                                    <small class="text-muted">Total Capacity</small>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="progress flex-grow-1 me-2">
+                                                            <div class="progress-bar bg-success" role="progressbar" 
+                                                                 style="width: {% widthratio event.attendee_count event.max_attendees 100 %}%">
+                                                            </div>
+                                                        </div>
+                                                        <span>{{ event.attendee_count }}/{{ event.max_attendees }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="stat-item">
+                                                <div class="stat-icon">
+                                                    <i class="fas fa-clock"></i>
+                                                </div>
+                                                <div class="stat-content">
+                                                    <small class="text-muted">Time Until Event</small>
+                                                    <h4 class="mb-0">{{ event.start_time|timeuntil }}</h4>
+                                                </div>
+                                            </div>
+                                            {% if pending_requests %}
+                                            <div class="stat-item">
+                                                <div class="stat-icon">
+                                                    <i class="fas fa-user-clock"></i>
+                                                </div>
+                                                <div class="stat-content">
+                                                    <small class="text-muted">Pending Requests</small>
+                                                    <h4 class="mb-0 text-warning">{{ pending_requests.count }}</h4>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if pending_requests %}
+                        <div class="tab-section">
+                            <h4 class="section-title">
+                                <i class="fas fa-user-clock me-2"></i>Pending Join Requests
+                            </h4>
+                            
+                            <div class="card">
+                                <div class="card-body p-0">
+                                    {% for request in pending_requests %}
+                                    <div class="request-item">
+                                        <div class="user-info">
+                                            <img src="{% if request.user.avatar %}{{ request.user.avatar.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}" 
+                                                 alt="{{ request.user.username }}" 
+                                                 class="user-avatar">
+                                            <div>
+                                                <h6 class="mb-1">{{ request.user.username }}</h6>
+                                                {% if request.message %}
+                                                <p class="text-muted mb-0">"{{ request.message }}"</p>
+                                                {% else %}
+                                                <p class="text-muted mb-0">Wants to join your event</p>
+                                                {% endif %}
+                                                <small class="text-muted">Requested {{ request.created_at|timesince }} ago</small>
+                                            </div>
+                                        </div>
+                                        <div class="action-buttons">
+                                            <form method="post" action="{% url 'approve_attendee' event.id request.user.id %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-success btn-sm">
+                                                    <i class="fas fa-check me-1"></i> Accept
+                                                </button>
+                                            </form>
+                                            <form method="post" action="{% url 'reject_attendee' event.id request.user.id %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-outline-secondary btn-sm">
+                                                    <i class="fas fa-times me-1"></i> Decline
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Event Actions Card -->
+            <div class="card mb-4 action-card">
+                <div class="card-body">
+                    {% if user.is_authenticated %}
+                        {% if user == event.host %}
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'event_manage' event.id %}" class="btn btn-haha btn-lg">
+                                <i class="fas fa-cog me-2"></i> Manage Event
+                            </a>
+                            <!-- Event Chat Button for Host -->
+                            <a href="{% url 'start_event_chat' event.id %}" class="btn btn-haha-outline">
+                                <i class="fas fa-comments me-2"></i> Event Chat
+                            </a>
+                            <a href="{% url 'event_edit' event.id %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-edit me-2"></i> Edit Details
+                            </a>
+                        </div>
+                        {% else %}
+                            {% if is_attending %}
+                            <div class="d-grid gap-2">
+                                <div class="attending-status">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <span>You're attending!</span>
+                                </div>
+                                <!-- Event Chat Button for Attendees -->
+                                <a href="{% url 'start_event_chat' event.id %}" class="btn btn-haha btn-sm">
+                                    <i class="fas fa-comments me-2"></i> Event Chat
+                                </a>
+                                <form method="post" action="{% url 'event_leave' event.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-secondary w-100">
+                                        <i class="fas fa-sign-out-alt me-2"></i> Leave Event
+                                    </button>
+                                </form>
+                            </div>
+                            {% else %}
+                            <div class="d-grid gap-2">
+                                <form method="post" action="{% url 'event_join' event.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-haha btn-lg w-100">
+                                        <i class="fas fa-check-circle me-2"></i> 
+                                        {% if event.privacy == 'private' %}
+                                        Request to Join
+                                        {% else %}
+                                        Join Event
+                                        {% endif %}
+                                    </button>
+                                </form>
+                                <button class="btn btn-outline-secondary">
+                                    <i class="far fa-heart me-2"></i> Save for Later
+                                </button>
+                            </div>
+                            {% endif %}
+                        {% endif %}
+                    {% else %}
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-haha btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i> Log In to Join
+                        </a>
+                        <a href="{% url 'register' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-user-plus me-2"></i> Create Account
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Event Host Card -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title section-title">
+                        <i class="fas fa-crown me-2"></i>Event Host
+                    </h5>
+                    <div class="event-host">
+                        <img src="{% if event.host.avatar %}{{ event.host.avatar.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}" 
+                             alt="{{ event.host.username }}" 
+                             class="host-avatar">
+                        <div>
+                            <h6>
+                                <a href="{% url 'profile' username=event.host.username %}" class="text-decoration-none">
+                                    {{ event.host.get_full_name|default:event.host.username }}
+                                </a>
+                            </h6>
+                            <p class="text-muted mb-2">
+                                {% if event.host.bio %}
+                                {{ event.host.bio|truncatewords:15 }}
+                                {% else %}
+                                Event host on HAHA
+                                {% endif %}
+                            </p>
+                            <div class="host-stats">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    {{ event.host.hosted_events.count }} events hosted
+                                </small>
+                            </div>
+                            <!-- Event Chat Button in Host Card -->
+                            {% if user.is_authenticated and is_attending or user == event.host %}
+                            <a href="{% url 'start_event_chat' event.id %}" class="btn btn-outline-primary btn-sm mt-2">
+                                <i class="fas fa-comments me-1"></i> Event Chat
+                            </a>
+                            {% endif %}
+                            {% if user.is_authenticated and user != event.host %}
+                            <a href="{% url 'start_direct_message' event.host.id %}" class="btn btn-outline-secondary btn-sm mt-2">
+                                <i class="fas fa-envelope me-1"></i> Message Host
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Event Details Card -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title section-title">
+                        <i class="fas fa-info-circle me-2"></i>Event Details
+                    </h5>
+                    
+                    <div class="detail-item">
+                        <div class="detail-icon">
+                            <i class="fas fa-calendar"></i>
+                        </div>
+                        <div class="detail-content">
+                            <small class="text-muted">DATE & TIME</small>
+                            <p class="mb-0">{{ event.start_time|date:"M j, Y" }}<br>{{ event.start_time|time:"g:i A" }} - {{ event.end_time|time:"g:i A" }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="detail-content">
+                            <small class="text-muted">LOCATION</small>
+                            <p class="mb-0">{{ event.location }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-icon">
+                            <i class="fas fa-tag"></i>
+                        </div>
+                        <div class="detail-content">
+                            <small class="text-muted">PRICE</small>
+                            <p class="mb-0">
+                                {% if event.price > 0 %}
+                                ${{ event.price }} per person
+                                {% else %}
+                                Free
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    {% if event.category %}
+                    <div class="detail-item">
+                        <div class="detail-icon">
+                            <i class="fas fa-tags"></i>
+                        </div>
+                        <div class="detail-content">
+                            <small class="text-muted">CATEGORY</small>
+                            <p class="mb-0">{{ event.category.name }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Share Event Card -->
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title section-title">
+                        <i class="fas fa-share-alt me-2"></i>Share This Event
+                    </h5>
+                    <div class="share-buttons">
+                        <button class="btn btn-outline-primary share-btn">
+                            <i class="fab fa-facebook-f"></i>
+                        </button>
+                        <button class="btn btn-outline-info share-btn">
+                            <i class="fab fa-twitter"></i>
+                        </button>
+                        <button class="btn btn-outline-danger share-btn">
+                            <i class="fab fa-instagram"></i>
+                        </button>
+                        <button class="btn btn-outline-dark share-btn" onclick="copyEventLink()">
+                            <i class="fas fa-link"></i>
+                        </button>
+                    </div>
+                    <small class="form-text text-muted mt-2 text-center">
+                        <i class="fas fa-info-circle me-1"></i>Share with friends to get more attendees
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, var(--haha-orange) 0%, var(--haha-purple) 100%);
+        color: white;
+        padding: 60px 0;
+        margin-bottom: 40px;
+    }
+
+    .event-date {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        backdrop-filter: blur(10px);
+    }
+
+    .event-date .month {
+        font-size: 1.2rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .event-date .day {
+        font-size: 2.5rem;
+        font-weight: bold;
+        line-height: 1;
+    }
+
+    .event-image-card {
+        position: relative;
+        overflow: hidden;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .event-image {
+        height: 400px;
+        object-fit: cover;
+        width: 100%;
+    }
+
+    .event-image-overlay {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        right: 15px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .event-status-badges {
+        display: flex;
+        gap: 8px;
+    }
+
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 500;
+        font-size: 0.8rem;
+        backdrop-filter: blur(10px);
+    }
+
+    .status-badge.upcoming {
+        background: rgba(40, 167, 69, 0.9);
+        color: white;
+    }
+
+    .status-badge.popular {
+        background: rgba(220, 53, 69, 0.9);
+        color: white;
+    }
+
+    .status-badge.private {
+        background: rgba(108, 117, 125, 0.9);
+        color: white;
+    }
+
+    .event-detail-tabs {
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .event-detail-tabs .nav-link {
+        display: flex;
+        align-items: center;
+        padding: 12px 20px;
+        font-weight: 500;
+        border: none;
+        color: #6c757d;
+        transition: all 0.3s ease;
+    }
+
+    .event-detail-tabs .nav-link:hover {
+        color: var(--haha-orange);
+        border: none;
+    }
+
+    .event-detail-tabs .nav-link.active {
+        background: none;
+        border: none;
+        border-bottom: 3px solid var(--haha-orange);
+        color: var(--haha-orange);
+    }
+
+    .event-tab-content {
+        background: white;
+        border-radius: 0 0 15px 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e9ecef;
+        border-top: none;
+    }
+
+    .tab-section {
+        padding: 25px;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .tab-section:last-child {
+        border-bottom: none;
+    }
+
+    .section-title {
+        color: var(--haha-orange);
+        font-weight: 600;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+    }
+
+    .event-description {
+        line-height: 1.6;
+        color: #495057;
+        font-size: 1.1rem;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 25px;
+    }
+
+    .info-icon {
+        width: 45px;
+        height: 45px;
+        background-color: var(--haha-orange-light);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        color: var(--haha-orange);
+        flex-shrink: 0;
+    }
+
+    .rules-content {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        border-left: 4px solid var(--haha-orange);
+        line-height: 1.6;
+    }
+
+    .location-map {
+        background: #e9ecef;
+        border-radius: 10px;
+        padding: 40px 20px;
+        text-align: center;
+    }
+
+    .map-placeholder i {
+        color: #6c757d;
+        margin-bottom: 15px;
+    }
+
+    .attendees-count {
+        text-align: center;
+    }
+
+    .attendee-avatars {
+        display: flex;
+        justify-content: center;
+        margin-top: 15px;
+    }
+
+    .attendee-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 3px solid white;
+        margin-left: -8px;
+        object-fit: cover;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .attendee-avatar:first-child {
+        margin-left: 0;
+    }
+
+    .more-attendees {
+        background: var(--haha-orange);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+
+    .attendee-card {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        padding: 20px;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .attendee-card:hover {
+        border-color: var(--haha-orange);
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .host-card {
+        border: 2px solid var(--haha-orange);
+        background: linear-gradient(135deg, rgba(255, 107, 53, 0.05), rgba(255, 154, 118, 0.05));
+    }
+
+    .attendee-avatar-container {
+        position: relative;
+        margin-right: 15px;
+    }
+
+    .attendee-avatar-large {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .host-badge {
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        background: var(--haha-orange);
+        color: white;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        border: 2px solid white;
+    }
+
+    .management-card {
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        border-radius: 12px;
+        transition: transform 0.3s ease;
+    }
+
+    .management-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .event-stats-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+    }
+
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 107, 53, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        color: var(--haha-orange);
+        flex-shrink: 0;
+    }
+
+    .stat-content {
+        flex: 1;
+    }
+
+    .request-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px;
+        border-bottom: 1px solid #e9ecef;
+        transition: background-color 0.3s ease;
+    }
+
+    .request-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .request-item:last-child {
+        border-bottom: none;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        flex: 1;
+    }
+
+    .user-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        margin-right: 15px;
+        object-fit: cover;
+        border: 2px solid #e9ecef;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .action-card {
+        border: 2px solid rgba(255, 107, 53, 0.1);
+        background: linear-gradient(135deg, rgba(255, 107, 53, 0.02), rgba(255, 154, 118, 0.02));
+        border-radius: 15px;
+    }
+
+    .attending-status {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+        background: rgba(40, 167, 69, 0.1);
+        border-radius: 8px;
+        margin-bottom: 10px;
+        color: #155724;
+        font-weight: 500;
+    }
+
+    .event-host {
+        display: flex;
+        align-items: flex-start;
+    }
+
+    .host-avatar {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 15px;
+        border: 3px solid var(--haha-orange-light);
+    }
+
+    .host-stats {
+        margin-top: 8px;
+    }
+
+    .detail-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #f8f9fa;
+    }
+
+    .detail-item:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+
+    .detail-icon {
+        width: 35px;
+        height: 35px;
+        background: rgba(255, 107, 53, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        color: var(--haha-orange);
+        flex-shrink: 0;
+    }
+
+    .share-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .share-btn {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+    }
+
+    .share-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-haha-outline {
+        background-color: transparent;
+        border: 2px solid var(--haha-orange);
+        color: var(--haha-orange);
+        transition: all 0.3s ease;
+    }
+
+    .btn-haha-outline:hover {
+        background-color: var(--haha-orange);
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .hero-section {
+            padding: 40px 0;
+        }
+        
+        .event-image {
+            height: 250px;
+        }
+        
+        .event-detail-tabs .nav-link {
+            padding: 10px 15px;
+            font-size: 0.9rem;
+        }
+        
+        .tab-section {
+            padding: 20px 15px;
+        }
+        
+        .info-item {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .info-icon {
+            margin-right: 0;
+            margin-bottom: 10px;
+        }
+        
+        .request-item {
+            flex-direction: column;
+            text-align: center;
+            gap: 15px;
+        }
+        
+        .user-info {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .user-avatar {
+            margin-right: 0;
+            margin-bottom: 10px;
+        }
+        
+        .event-host {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .host-avatar {
+            margin-right: 0;
+            margin-bottom: 15px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function copyEventLink() {
+        const eventUrl = window.location.href;
+        navigator.clipboard.writeText(eventUrl).then(() => {
+            // Show success message
+            const shareBtn = event.target.closest('.share-btn');
+            const originalHtml = shareBtn.innerHTML;
+            shareBtn.innerHTML = '<i class="fas fa-check"></i>';
+            shareBtn.classList.remove('btn-outline-dark');
+            shareBtn.classList.add('btn-success');
+            
+            setTimeout(() => {
+                shareBtn.innerHTML = originalHtml;
+                shareBtn.classList.remove('btn-success');
+                shareBtn.classList.add('btn-outline-dark');
+            }, 2000);
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+            alert('Failed to copy event link. Please try again.');
+        });
+    }
+
+    // Initialize tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+        var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock %}

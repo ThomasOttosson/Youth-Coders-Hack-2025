@@ -1,0 +1,370 @@
+<!-- templates/accounts/profile_edit.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Profile - HAHA{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Edit Profile</h1>
+                <a href="{% url 'profile' username=request.user.username %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Profile
+                </a>
+            </div>
+
+            <!-- Edit Form -->
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Avatar Section -->
+                        <div class="row mb-4">
+                            <div class="col-md-3 text-center">
+                                <div class="avatar-edit-section">
+                                    {% if request.user.avatar %}
+                                        <img src="{{ request.user.avatar.url }}" alt="Current avatar" 
+                                             class="rounded-circle mb-3 avatar-preview" id="avatarPreview" 
+                                             width="120" height="120">
+                                    {% else %}
+                                        <img src="{% static 'images/default-avatar.png' %}" alt="Default avatar" 
+                                             class="rounded-circle mb-3 avatar-preview" id="avatarPreview" 
+                                             width="120" height="120">
+                                    {% endif %}
+                                    <div class="mb-3">
+                                        <input type="file" class="form-control" id="avatar" name="avatar" 
+                                               accept="image/*" onchange="previewAvatar(this)">
+                                        <div class="form-text">
+                                            Recommended: 200x200px, max 2MB
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeAvatar()">
+                                        <i class="fas fa-trash me-1"></i>Remove
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-9">
+                                <!-- Basic Information -->
+                                <h5 class="mb-3">Basic Information</h5>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="username" class="form-label">Username</label>
+                                        <input type="text" class="form-control" id="username" 
+                                               value="{{ request.user.username }}" disabled>
+                                        <div class="form-text">Username cannot be changed</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="email" class="form-label">Email Address *</label>
+                                        <input type="email" class="form-control" id="email" name="email" 
+                                               value="{{ request.user.email }}" required>
+                                        <div class="invalid-feedback">
+                                            Please provide a valid email address.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="first_name" class="form-label">First Name</label>
+                                        <input type="text" class="form-control" id="first_name" name="first_name" 
+                                               value="{{ request.user.first_name }}">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="last_name" class="form-label">Last Name</label>
+                                        <input type="text" class="form-control" id="last_name" name="last_name" 
+                                               value="{{ request.user.last_name }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Additional Information -->
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label for="bio" class="form-label">Bio</label>
+                                <textarea class="form-control" id="bio" name="bio" rows="4" 
+                                          placeholder="Tell us a bit about yourself...">{{ request.user.bio }}</textarea>
+                                <div class="form-text">
+                                    <span id="bioCounter">0</span>/500 characters
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="location" class="form-label">
+                                    <i class="fas fa-map-marker-alt me-2"></i>Location
+                                </label>
+                                <input type="text" class="form-control" id="location" name="location" 
+                                       value="{{ request.user.location }}" placeholder="City, Country">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label">
+                                    <i class="fas fa-phone me-2"></i>Phone Number
+                                </label>
+                                <input type="tel" class="form-control" id="phone" name="phone" 
+                                       value="{{ request.user.phone }}">
+                            </div>
+                        </div>
+
+                        <!-- Privacy Settings -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h5 class="mb-3">Privacy Settings</h5>
+                                
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="profile_public" name="profile_public" 
+                                           {% if request.user.profile_public %}checked{% endif %}>
+                                    <label class="form-check-label" for="profile_public">
+                                        Make profile public
+                                    </label>
+                                    <div class="form-text">
+                                        When enabled, anyone can view your profile and events
+                                    </div>
+                                </div>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="show_email" name="show_email" 
+                                           {% if request.user.show_email %}checked{% endif %}>
+                                    <label class="form-check-label" for="show_email">
+                                        Show email to friends
+                                    </label>
+                                    <div class="form-text">
+                                        Allow friends to see your email address
+                                    </div>
+                                </div>
+
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="event_notifications" name="event_notifications" 
+                                           {% if request.user.event_notifications %}checked{% endif %}>
+                                    <label class="form-check-label" for="event_notifications">
+                                        Event notifications
+                                    </label>
+                                    <div class="form-text">
+                                        Receive notifications for event updates and invitations
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="row mt-5">
+                            <div class="col-12">
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <a href="{% url 'profile' username=request.user.username %}" 
+                                       class="btn btn-outline-secondary">Cancel</a>
+                                    <button type="submit" class="btn btn-haha">
+                                        <i class="fas fa-save me-2"></i>Save Changes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="card mt-4 border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Danger Zone
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h6 class="text-danger">Delete Account</h6>
+                            <p class="text-muted small mb-0">
+                                Once you delete your account, there is no going back. Please be certain.
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                                <i class="fas fa-trash me-2"></i>Delete Account
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Delete Account
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete your account? This action cannot be undone.</p>
+                <p class="text-danger"><strong>All your events, friends, and data will be permanently deleted.</strong></p>
+                <div class="mb-3">
+                    <label for="confirmUsername" class="form-label">
+                        Type your username <strong>{{ request.user.username }}</strong> to confirm:
+                    </label>
+                    <input type="text" class="form-control" id="confirmUsername" placeholder="Enter your username">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger" id="confirmDelete" disabled>
+                        <i class="fas fa-trash me-2"></i>Delete My Account
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Bio character counter
+        const bioTextarea = document.getElementById('bio');
+        const bioCounter = document.getElementById('bioCounter');
+        
+        if (bioTextarea && bioCounter) {
+            bioCounter.textContent = bioTextarea.value.length;
+            
+            bioTextarea.addEventListener('input', function() {
+                bioCounter.textContent = this.value.length;
+                
+                if (this.value.length > 500) {
+                    this.classList.add('is-invalid');
+                    bioCounter.classList.add('text-danger');
+                } else {
+                    this.classList.remove('is-invalid');
+                    bioCounter.classList.remove('text-danger');
+                }
+            });
+        }
+
+        // Delete account confirmation
+        const confirmInput = document.getElementById('confirmUsername');
+        const confirmButton = document.getElementById('confirmDelete');
+        
+        if (confirmInput && confirmButton) {
+            confirmInput.addEventListener('input', function() {
+                confirmButton.disabled = this.value !== '{{ request.user.username }}';
+            });
+        }
+
+        // Form validation
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    });
+
+    // Avatar preview
+    function previewAvatar(input) {
+        const preview = document.getElementById('avatarPreview');
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // Remove avatar
+    function removeAvatar() {
+        const preview = document.getElementById('avatarPreview');
+        const fileInput = document.getElementById('avatar');
+        const defaultAvatar = '{% static "images/default-avatar.png" %}';
+        
+        preview.src = defaultAvatar;
+        fileInput.value = '';
+        
+        // You might want to add a hidden field to indicate avatar removal
+        // or handle this in the view
+    }
+
+    // Auto-save draft (optional)
+    let saveTimeout;
+    function autoSaveDraft() {
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+            // Implement auto-save functionality here
+            console.log('Auto-saving profile changes...');
+        }, 2000);
+    }
+
+    // Add input event listeners for auto-save
+    document.querySelectorAll('input, textarea').forEach(element => {
+        element.addEventListener('input', autoSaveDraft);
+    });
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .avatar-preview {
+        object-fit: cover;
+        border: 3px solid var(--haha-orange-light);
+    }
+
+    .avatar-edit-section {
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        text-align: center;
+    }
+
+    .needs-validation .form-control:valid {
+        border-color: #198754;
+    }
+
+    .needs-validation .form-control:invalid {
+        border-color: #dc3545;
+    }
+
+    .card {
+        border: none;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+    }
+
+    .card-header {
+        background: white;
+        border-bottom: 1px solid #e9ecef;
+        font-weight: 600;
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: #495057;
+    }
+
+    .btn-haha {
+        border-radius: 8px;
+        padding: 8px 20px;
+    }
+
+    @media (max-width: 768px) {
+        .avatar-edit-section {
+            margin-bottom: 20px;
+        }
+    }
+</style>
+{% endblock %}

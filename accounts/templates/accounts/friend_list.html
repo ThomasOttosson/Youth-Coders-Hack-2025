@@ -1,0 +1,169 @@
+<!-- templates/friends/friend_list.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Friends - HAHA{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">My Friends</h1>
+                <a href="{% url 'find_friends' %}" class="btn btn-haha">
+                    <i class="fas fa-user-plus me-2"></i>Find Friends
+                </a>
+            </div>
+
+            <!-- Tabs -->
+            <ul class="nav nav-tabs mb-4" id="friendsTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="friends-tab" data-bs-toggle="tab" data-bs-target="#friends" type="button">
+                        Friends ({{ friends|length }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="requests-tab" data-bs-toggle="tab" data-bs-target="#requests" type="button">
+                        Requests ({{ pending_requests.count }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="sent-tab" data-bs-toggle="tab" data-bs-target="#sent" type="button">
+                        Sent ({{ sent_requests.count }})
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Tab Content -->
+            <div class="tab-content" id="friendsTabsContent">
+                <!-- Friends List -->
+                <div class="tab-pane fade show active" id="friends" role="tabpanel">
+                    {% if friends %}
+                    <div class="row">
+                        {% for friend in friends %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card friend-card">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <img src="{% static 'images/default-avatar.png' %}" 
+                                             alt="{{ friend.username }}" 
+                                             class="rounded-circle me-3" width="50" height="50">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">{{ friend.username }}</h6>
+                                            <p class="text-muted small mb-0">{{ friend.get_full_name|default:friend.email }}</p>
+                                        </div>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                                    type="button" data-bs-toggle="dropdown">
+                                                <i class="fas fa-ellipsis-h"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <a class="dropdown-item" href="{% url 'mutual_friends' friend.id %}">
+                                                        <i class="fas fa-users me-2"></i>Mutual Friends
+                                                    </a>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <form method="post" action="{% url 'remove_friend' friend.id %}" class="d-inline">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="dropdown-item text-danger" 
+                                                                onclick="return confirm('Are you sure you want to remove this friend?')">
+                                                            <i class="fas fa-user-times me-2"></i>Remove Friend
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <h5>No friends yet</h5>
+                        <p class="text-muted">Start by finding and adding some friends!</p>
+                        <a href="{% url 'find_friends' %}" class="btn btn-haha">
+                            <i class="fas fa-user-plus me-2"></i>Find Friends
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Pending Requests -->
+                <div class="tab-pane fade" id="requests" role="tabpanel">
+                    {% if pending_requests %}
+                    {% for request in pending_requests %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <img src="{% static 'images/default-avatar.png' %}" 
+                                     alt="{{ request.from_user.username }}" 
+                                     class="rounded-circle me-3" width="50" height="50">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">{{ request.from_user.username }}</h6>
+                                    <p class="text-muted small mb-2">Sent {{ request.created_at|timesince }} ago</p>
+                                </div>
+                                <div class="btn-group">
+                                    <a href="{% url 'accept_friend_request' request.id %}" 
+                                       class="btn btn-success btn-sm">
+                                        <i class="fas fa-check me-1"></i>Accept
+                                    </a>
+                                    <a href="{% url 'decline_friend_request' request.id %}" 
+                                       class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-times me-1"></i>Decline
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-envelope fa-3x text-muted mb-3"></i>
+                        <h5>No pending requests</h5>
+                        <p class="text-muted">When someone sends you a friend request, it will appear here.</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Sent Requests -->
+                <div class="tab-pane fade" id="sent" role="tabpanel">
+                    {% if sent_requests %}
+                    {% for request in sent_requests %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <img src="{% static 'images/default-avatar.png' %}" 
+                                     alt="{{ request.to_user.username }}" 
+                                     class="rounded-circle me-3" width="50" height="50">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">{{ request.to_user.username }}</h6>
+                                    <p class="text-muted small mb-2">Sent {{ request.created_at|timesince }} ago</p>
+                                </div>
+                                <a href="{% url 'cancel_friend_request' request.id %}" 
+                                   class="btn btn-outline-secondary btn-sm"
+                                   onclick="return confirm('Cancel this friend request?')">
+                                    <i class="fas fa-times me-1"></i>Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-paper-plane fa-3x text-muted mb-3"></i>
+                        <h5>No sent requests</h5>
+                        <p class="text-muted">Your sent friend requests will appear here.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

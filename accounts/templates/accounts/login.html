@@ -1,0 +1,415 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login - HAHA{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold">Welcome Back to HAHA</h1>
+        <p class="lead">Log in to your account to continue planning amazing events</p>
+    </div>
+</section>
+
+<!-- Login Form -->
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <div class="auth-icon">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </div>
+                    <h2 class="auth-title">Welcome Back</h2>
+                    <p class="auth-subtitle">Log in to your HAHA account</p>
+                </div>
+                
+                <form method="post" id="loginForm" class="auth-form">
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                    <div class="alert alert-danger auth-alert">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <div>
+                                <strong>Invalid username or password. Please try again.</strong>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <div class="form-group">
+                            <label for="{{ form.username.id_for_label }}" class="form-label">
+                                <i class="fas fa-user me-2"></i>Username
+                            </label>
+                            {{ form.username }}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-group password-container">
+                            <label for="{{ form.password.id_for_label }}" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Password
+                            </label>
+                            {{ form.password }}
+                            <button type="button" class="password-toggle" id="toggleLoginPassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4 d-flex justify-content-between align-items-center">
+                        <div class="form-check custom-checkbox">
+                            <input type="checkbox" class="form-check-input" id="rememberMe">
+                            <label class="form-check-label" for="rememberMe">Remember me</label>
+                        </div>
+                        {% comment %} <a href="#" class="forgot-password-link">Forgot password?</a> {% endcomment %}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-haha w-100 py-3 mb-3 auth-submit-btn">
+                        <i class="fas fa-sign-in-alt me-2"></i>Log In
+                    </button>
+                </form>
+                
+                {% comment %} <div class="divider">
+                    <span class="divider-text">Or log in with</span>
+                </div>
+                
+                <div class="social-buttons">
+                    <button class="social-btn btn-google">
+                        <i class="fab fa-google me-2"></i>Continue with Google
+                    </button>
+                    
+                    <button class="social-btn btn-facebook">
+                        <i class="fab fa-facebook-f me-2"></i>Continue with Facebook
+                    </button>
+                </div>
+                 {% endcomment %}
+                <div class="auth-footer mt-4">
+                    <p>Don't have an account? <a href="{% url 'register' %}" class="auth-link">Sign Up</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<section class="container my-5">
+    <div class="row text-center">
+        <div class="col-md-4 mb-4">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-calendar-plus"></i>
+                </div>
+                <h4>Create Events</h4>
+                <p class="text-muted">Easily plan and organize parties with our intuitive event creation tools.</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h4>Invite Friends</h4>
+                <p class="text-muted">Connect with friends and manage invitations all in one place.</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <h4>Group Chat</h4>
+                <p class="text-muted">Coordinate with attendees through our built-in event chat system.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .forgot-password-link {
+        color: var(--haha-orange);
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: color 0.3s ease;
+    }
+
+    .forgot-password-link:hover {
+        color: var(--haha-orange-dark);
+        text-decoration: underline;
+    }
+
+    /* Reuse all the styles from register.html */
+    .auth-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        padding: 40px;
+        margin-bottom: 30px;
+        border: 1px solid rgba(255, 107, 53, 0.1);
+    }
+
+    .auth-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .auth-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, var(--haha-orange), var(--haha-orange-light));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        color: white;
+        font-size: 2rem;
+        box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+    }
+
+    .auth-title {
+        font-weight: 700;
+        color: var(--haha-dark);
+        margin-bottom: 10px;
+        font-size: 2rem;
+    }
+
+    .auth-subtitle {
+        color: #6c757d;
+        font-size: 1.1rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: var(--haha-dark);
+        display: flex;
+        align-items: center;
+    }
+
+    .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+    }
+
+    .form-control:focus {
+        border-color: var(--haha-orange);
+        box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.15);
+        background: white;
+    }
+
+    .password-container {
+        position: relative;
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 16px;
+        top: 42px;
+        background: none;
+        border: none;
+        color: #6c757d;
+        cursor: pointer;
+        transition: color 0.3s ease;
+        padding: 8px;
+        border-radius: 6px;
+    }
+
+    .password-toggle:hover {
+        color: var(--haha-orange);
+        background: rgba(255, 107, 53, 0.1);
+    }
+
+    .custom-checkbox .form-check-input {
+        width: 1.2em;
+        height: 1.2em;
+        margin-top: 0.2em;
+        border: 2px solid #dee2e6;
+    }
+
+    .custom-checkbox .form-check-input:checked {
+        background-color: var(--haha-orange);
+        border-color: var(--haha-orange);
+    }
+
+    .custom-checkbox .form-check-label {
+        color: #495057;
+        font-weight: 500;
+    }
+
+    .auth-alert {
+        border-radius: 12px;
+        border: none;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+    }
+
+    .auth-submit-btn {
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+    }
+
+    .auth-submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+    }
+
+    .divider {
+        display: flex;
+        align-items: center;
+        margin: 30px 0;
+    }
+
+    .divider::before,
+    .divider::after {
+        content: "";
+        flex: 1;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .divider-text {
+        padding: 0 15px;
+        color: #6c757d;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .social-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .social-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        background: white;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        color: #495057;
+    }
+
+    .social-btn:hover {
+        background-color: #f8f9fa;
+        border-color: var(--haha-orange);
+        color: var(--haha-orange);
+        transform: translateY(-1px);
+    }
+
+    .btn-google:hover {
+        border-color: #db4437;
+        color: #db4437;
+    }
+
+    .btn-facebook:hover {
+        border-color: #4267B2;
+        color: #4267B2;
+    }
+
+    .auth-footer {
+        text-align: center;
+        color: #6c757d;
+    }
+
+    .auth-link {
+        color: var(--haha-orange);
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+
+    .auth-link:hover {
+        color: var(--haha-orange-dark);
+        text-decoration: underline;
+    }
+
+    .feature-card {
+        padding: 30px 20px;
+        border-radius: 15px;
+        transition: transform 0.3s ease;
+        background: white;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+    }
+
+    @media (max-width: 768px) {
+        .auth-card {
+            padding: 30px 20px;
+            margin: 0 10px;
+        }
+
+        .auth-title {
+            font-size: 1.75rem;
+        }
+
+        .social-buttons {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Password toggle functionality
+        const toggleLoginPassword = document.getElementById('toggleLoginPassword');
+        const loginPassword = document.getElementById('{{ form.password.id_for_label }}');
+        
+        if (toggleLoginPassword && loginPassword) {
+            toggleLoginPassword.addEventListener('click', function() {
+                const type = loginPassword.getAttribute('type') === 'password' ? 'text' : 'password';
+                loginPassword.setAttribute('type', type);
+                
+                // Toggle eye icon
+                const icon = this.querySelector('i');
+                if (type === 'password') {
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                } else {
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                }
+            });
+        }
+        
+        // Real-time validation feedback
+        const formInputs = document.querySelectorAll('.form-control');
+        formInputs.forEach(input => {
+            input.addEventListener('blur', function() {
+                if (this.value.trim() !== '') {
+                    this.classList.add('is-valid');
+                } else {
+                    this.classList.remove('is-valid');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

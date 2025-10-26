@@ -1,0 +1,35 @@
+<!-- chat/templates/chat/delete_chat_room.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Leave Chat - HAHA{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Leave Chat</h4>
+                </div>
+                <div class="card-body">
+                    <p>Are you sure you want to leave this chat?</p>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        You will no longer receive messages from this chat.
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger">Yes, Leave Chat</button>
+                            <a href="{% url 'chat_room' room.id %}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

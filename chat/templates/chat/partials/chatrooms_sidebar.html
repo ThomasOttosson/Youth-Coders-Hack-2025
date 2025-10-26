@@ -1,0 +1,171 @@
+{% load static %}
+{% load chat_filters %}
+
+<!-- chat/templates/chat/partials/chat_sidebar.html -->
+<div class="card chat-sidebar">
+    <style>
+        .chat-sidebar {
+            height: calc(100vh - 140px);
+            display: flex;
+            flex-direction: column;
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .chat-sidebar .card-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-list {
+            flex: 1;
+            overflow-y: auto;
+            max-height: none;
+        }
+        
+        /* Mobile height adjustments */
+        @media (max-width: 768px) {
+            .chat-sidebar {
+                height: 60vh;
+                max-height: 500px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .chat-sidebar {
+                height: 50vh;
+                max-height: 400px;
+            }
+        }
+    </style>
+    
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold d-none d-md-block">Messages</h5>
+        <h5 class="mb-0 fw-bold d-md-none">Chats</h5>
+        <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-plus"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="{% url 'create_group_chat' %}">
+                    <i class="fas fa-users me-2"></i>New Group
+                </a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'friend_list' %}">
+                    <i class="fas fa-user-plus me-2"></i>Find Friends
+                </a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="card-body p-0">
+        <!-- Search -->
+        <div class="p-3 border-bottom">
+            <div class="input-group">
+                <span class="input-group-text bg-light border-0">
+                    <i class="fas fa-search text-muted"></i>
+                </span>
+                <input type="text" class="form-control chat-search border-0 bg-light" placeholder="Search conversations...">
+            </div>
+        </div>
+        
+        <!-- Chat List -->
+        <div class="chat-list">
+            {% for room in chat_rooms %}
+            <a href="{% url 'chat_room' room.id %}" class="chat-list-item {% if room.unread_count > 0 %}unread{% endif %}">
+                <div class="d-flex align-items-start">
+                    <!-- Room Avatar -->
+                    <div class="chat-avatar me-3 position-relative">
+                        {% if room.room_type == 'direct' %}
+                            {% with other_user=room|other_participant:request.user %}
+                                {% if other_user %}
+                                <img src="{% if other_user.avatar %}{{ other_user.avatar.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}" 
+                                     alt="{{ other_user.username }}" class="rounded-circle">
+                                <!-- Online Status Indicator -->
+                                <div class="online-status {% if other_user.is_online %}online{% else %}offline{% endif %}"></div>
+                                {% else %}
+                                <img src="{% static 'images/default-avatar.png' %}" 
+                                     alt="Unknown User" class="rounded-circle">
+                                <div class="online-status offline"></div>
+                                {% endif %}
+                            {% endwith %}
+                        {% elif room.room_type == 'event' %}
+                            <div class="event-avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="fas fa-calendar"></i>
+                            </div>
+                        {% else %}
+                            <div class="group-avatar bg-success text-white rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Room Info -->
+                    <div class="flex-grow-1 min-width-0">
+                        <div class="d-flex justify-content-between align-items-start mb-1">
+                            <h6 class="mb-0 fw-semibold text-truncate">
+                                {% if room.room_type == 'direct' %}
+                                    {% with other_user=room|other_participant:request.user %}
+                                        {% if other_user %}
+                                            {{ other_user.username }}
+                                        {% else %}
+                                            Unknown User
+                                        {% endif %}
+                                    {% endwith %}
+                                {% elif room.room_type == 'event' %}
+                                    {{ room.event.title|truncatewords:3 }}
+                                {% else %}
+                                    {{ room.name|truncatewords:3 }}
+                                {% endif %}
+                            </h6>
+                            {% if room.unread_count > 0 %}
+                            <span class="badge bg-danger rounded-pill ms-2">{{ room.unread_count }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <p class="mb-1 text-muted small chat-preview">
+                            {% with last_message=room.get_last_message %}
+                                {% if last_message %}
+                                    {{ last_message.content|truncatewords:8 }}
+                                {% else %}
+                                    <span class="text-muted">Start a conversation...</span>
+                                {% endif %}
+                            {% endwith %}
+                        </p>
+                        
+                        <div class="chat-meta">
+                            <small class="timestamp">
+                                {% with last_message=room.get_last_message %}
+                                    {% if last_message %}
+                                        {{ last_message.timestamp|timesince }} ago
+                                    {% else %}
+                                        New
+                                    {% endif %}
+                                {% endwith %}
+                            </small>
+                            {% if room.room_type == 'group' %}
+                            <small class="text-muted">
+                                <i class="fas fa-users me-1"></i>{{ room.participants.count }}
+                            </small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% empty %}
+            <div class="empty-state">
+                <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                <p class="text-muted mb-2">No conversations yet</p>
+                <small class="text-muted">Start chatting with friends or join event discussions</small>
+                <div class="mt-3">
+                    <a href="{% url 'friend_list' %}" class="btn btn-haha btn-sm">
+                        <i class="fas fa-user-plus me-1"></i>Find Friends
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>

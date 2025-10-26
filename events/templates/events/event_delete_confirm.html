@@ -1,0 +1,184 @@
+<!-- templates/events/event_delete_confirm.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delete Event - {{ event.title }} - HAHA{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Delete Event
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Event Summary -->
+                    <div class="event-summary mb-4 p-3 bg-light rounded">
+                        <h5 class="text-danger">{{ event.title }}</h5>
+                        <div class="row small text-muted">
+                            <div class="col-6">
+                                <i class="fas fa-calendar me-1"></i>
+                                {{ event.start_time|date:"M j, Y" }}
+                            </div>
+                            <div class="col-6">
+                                <i class="fas fa-clock me-1"></i>
+                                {{ event.start_time|date:"g:i A" }}
+                            </div>
+                        </div>
+                        <div class="row small text-muted mt-1">
+                            <div class="col-12">
+                                <i class="fas fa-map-marker-alt me-1"></i>
+                                {{ event.location }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Warning Alert -->
+                    <div class="alert alert-danger">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-skull-crossbones me-2"></i>
+                            This action cannot be undone!
+                        </h5>
+                    </div>
+
+                    <!-- Consequences -->
+                    <div class="mb-4">
+                        <h6>What will be deleted:</h6>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                The event "{{ event.title }}"
+                                <i class="fas fa-check text-danger"></i>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                All event details and description
+                                <i class="fas fa-check text-danger"></i>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ attendee_count }} attendee{{ attendee_count|pluralize }} will be removed
+                                <i class="fas fa-check text-danger"></i>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                All event invitations
+                                <i class="fas fa-check text-danger"></i>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Event comments and discussions
+                                <i class="fas fa-check text-danger"></i>
+                            </li>
+                        </ul>
+                    </div>
+
+                    {% if attendee_count > 0 %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-users me-2"></i>
+                        <strong>{{ attendee_count }} person{{ attendee_count|pluralize }}</strong> 
+                        {{ attendee_count|pluralize:"is,are" }} currently attending this event. 
+                        They will be notified that the event has been deleted.
+                    </div>
+                    {% endif %}
+
+                    <!-- Delete Form -->
+                    <form method="post" action="{% url 'event_delete' event.id %}" id="deleteForm">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="confirmEventName" class="form-label">
+                                To confirm, type the event name exactly: 
+                                <strong class="text-danger">"{{ event.title }}"</strong>
+                            </label>
+                            <input type="text" class="form-control" id="confirmEventName" 
+                                   name="confirm_event_name" placeholder='Type "{{ event.title }}"' required>
+                            <div class="form-text">
+                                This will permanently delete the event and all associated data.
+                            </div>
+                        </div>
+
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="confirmUnderstanding" required>
+                            <label class="form-check-label text-danger" for="confirmUnderstanding">
+                                I understand that this event and all its data will be permanently deleted and this action cannot be undone.
+                            </label>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'event_detail' event.id %}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger" id="deleteButton" disabled>
+                                <i class="fas fa-trash me-2"></i>Permanently Delete Event
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Alternative Options -->
+            <div class="card mt-4">
+                <div class="card-body text-center">
+                    <h6>Not sure about deleting?</h6>
+                    <p class="text-muted mb-3">Consider these alternatives:</p>
+                    <div class="d-flex gap-2 justify-content-center flex-wrap">
+                        <a href="{% url 'event_edit' event.id %}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-edit me-2"></i>Edit Event
+                        </a>
+                        <a href="{% url 'event_invite' event.id %}" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-user-plus me-2"></i>Invite More People
+                        </a>
+                        {% if event.start_time > now %}
+                        <form method="post" action="{% url 'event_cancel' event.id %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-warning btn-sm"
+                                    onclick="return confirm('Cancel this event? Attendees will be notified.')">
+                                <i class="fas fa-ban me-2"></i>Cancel Event
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const confirmInput = document.getElementById('confirmEventName');
+        const confirmCheckbox = document.getElementById('confirmUnderstanding');
+        const deleteButton = document.getElementById('deleteButton');
+        const form = document.getElementById('deleteForm');
+
+        function updateDeleteButton() {
+            const eventNameMatches = confirmInput.value.trim() === '{{ event.title }}';
+            deleteButton.disabled = !(eventNameMatches && confirmCheckbox.checked);
+        }
+
+        confirmInput.addEventListener('input', updateDeleteButton);
+        confirmCheckbox.addEventListener('change', updateDeleteButton);
+
+        // Double confirmation on submit
+        form.addEventListener('submit', function(e) {
+            if (!confirm('Are you absolutely sure? This will permanently delete the event and all associated data!')) {
+                e.preventDefault();
+                return false;
+            }
+            
+            // Show loading state
+            deleteButton.disabled = true;
+            deleteButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Deleting...';
+        });
+
+        // Enter key prevention in confirmation field
+        confirmInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,176 @@
+<!-- templates/accounts/delete_account_confirm.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delete Account - HAHA{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Delete Account
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-skull-crossbones me-2"></i>
+                            Warning: This action cannot be undone!
+                        </h5>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6>What will be deleted:</h6>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Your profile information
+                                <i class="fas fa-check text-danger"></i>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                All events you created
+                                <i class="fas fa-check text-danger"></i>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Your event attendance records
+                                <i class="fas fa-check text-danger"></i>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Your friend connections
+                                <i class="fas fa-check text-danger"></i>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Messages and notifications
+                                <i class="fas fa-check text-danger"></i>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        <strong>Consider deactivating instead:</strong> 
+                        You can temporarily deactivate your account and reactivate it later by logging in.
+                        <a href="{% url 'deactivate_account' %}" class="alert-link">Learn more about deactivation</a>.
+                    </div>
+
+                    <form method="post" id="deleteAccountForm">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="confirmUsername" class="form-label">
+                                To confirm, type your username exactly: 
+                                <strong class="text-danger">{{ request.user.username }}</strong>
+                            </label>
+                            <input type="text" class="form-control" id="confirmUsername" name="confirm_username" 
+                                   placeholder="Enter your username" required>
+                            <div class="form-text">
+                                This action is permanent and cannot be reversed.
+                            </div>
+                        </div>
+
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="confirmUnderstanding" required>
+                            <label class="form-check-label text-danger" for="confirmUnderstanding">
+                                I understand that all my data will be permanently deleted and this action cannot be undone.
+                            </label>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'profile_edit' %}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger" id="deleteButton" disabled>
+                                <i class="fas fa-trash me-2"></i>Permanently Delete My Account
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Alternative Options -->
+            <div class="card mt-4">
+                <div class="card-body text-center">
+                    <h6>Not ready to delete?</h6>
+                    <p class="text-muted mb-3">Consider these alternatives:</p>
+                    <div class="d-flex gap-2 justify-content-center">
+                        <a href="{% url 'deactivate_account' %}" class="btn btn-outline-warning btn-sm">
+                            <i class="fas fa-pause me-2"></i>Deactivate Account
+                        </a>
+                        <a href="{% url 'profile_edit' %}" class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-cog me-2"></i>Update Privacy Settings
+                        </a>
+                        <a href="{% url 'help' %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-question-circle me-2"></i>Get Help
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const confirmInput = document.getElementById('confirmUsername');
+        const confirmCheckbox = document.getElementById('confirmUnderstanding');
+        const deleteButton = document.getElementById('deleteButton');
+        const form = document.getElementById('deleteAccountForm');
+
+        function updateDeleteButton() {
+            const usernameMatches = confirmInput.value === '{{ request.user.username }}';
+            deleteButton.disabled = !(usernameMatches && confirmCheckbox.checked);
+        }
+
+        confirmInput.addEventListener('input', updateDeleteButton);
+        confirmCheckbox.addEventListener('change', updateDeleteButton);
+
+        // Double confirmation on submit
+        form.addEventListener('submit', function(e) {
+            if (!confirm('Are you absolutely sure? This will permanently delete your account and all associated data!')) {
+                e.preventDefault();
+                return false;
+            }
+            
+            // Show loading state
+            deleteButton.disabled = true;
+            deleteButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Deleting...';
+        });
+
+        // Enter key prevention in confirmation field
+        confirmInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+            }
+        });
+    });
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .list-group-item {
+        border: none;
+        padding: 0.75rem 0;
+    }
+
+    .btn-danger {
+        border-radius: 8px;
+        padding: 10px 20px;
+    }
+
+    .alert {
+        border-radius: 8px;
+        border: none;
+    }
+</style>
+{% endblock %}

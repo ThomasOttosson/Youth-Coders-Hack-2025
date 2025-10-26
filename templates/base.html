@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}HAHA - Plan Amazing Parties{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --haha-orange: #FF6B35;
+            --haha-orange-light: #FF9A76;
+            --haha-orange-dark: #E55A2B;
+            --haha-white: #FFFFFF;
+            --haha-gray: #F8F9FA;
+            --haha-dark: #343A40;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--haha-gray);
+            color: var(--haha-dark);
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.8rem;
+        }
+        
+        
+        
+        .btn-haha {
+            background-color: var(--haha-orange);
+            color: white;
+            border: none;
+        }
+        
+        .btn-haha:hover {
+            background-color: var(--haha-orange-dark);
+            color: white;
+        }
+        
+        .btn-haha-outline {
+            border: 1px solid var(--haha-orange);
+            color: var(--haha-orange);
+        }
+        
+        .btn-haha-outline:hover {
+            background-color: var(--haha-orange);
+            color: white;
+        }
+        
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .event-card {
+            border-left: 4px solid var(--haha-orange);
+        }
+        
+        .chat-container {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            background-color: white;
+        }
+        
+        .chat-message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 20px;
+            max-width: 80%;
+        }
+        
+        .chat-message.sent {
+            background-color: var(--haha-orange-light);
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .chat-message.received {
+            background-color: #e9ecef;
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--haha-orange);
+        }
+        
+        .sidebar {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-pills .nav-link.active {
+            background-color: var(--haha-orange);
+        }
+        
+        .nav-pills .nav-link {
+            color: var(--haha-dark);
+        }
+        
+        .event-badge {
+            background-color: var(--haha-orange-light);
+            color: var(--haha-dark);
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, var(--haha-orange) 0%, var(--haha-orange-light) 100%);
+            color: white;
+            padding: 80px 0;
+            border-radius: 0 0 30px 30px;
+            margin-bottom: 40px;
+        }
+        
+        footer {
+            background-color: var(--haha-dark);
+            color: white;
+            padding: 40px 0;
+            margin-top: 60px;
+        }
+        
+        .section-title {
+            position: relative;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .section-title:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background-color: var(--haha-orange);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            color: var(--haha-orange);
+            margin-bottom: 20px;
+        }
+        
+        .tab-content {
+            background-color: white;
+            border-radius: 0 10px 10px 10px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-tabs {
+            border-bottom: none;
+        }
+        
+        .nav-tabs .nav-link {
+            border: none;
+            border-radius: 10px 10px 0 0;
+            padding: 12px 25px;
+            color: var(--haha-dark);
+            font-weight: 500;
+        }
+        
+        .nav-tabs .nav-link.active {
+            background-color: white;
+            color: var(--haha-orange);
+            border-bottom: 3px solid var(--haha-orange);
+        }
+
+        .event-image {
+            height: 180px;
+            object-fit: cover;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .host-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+            object-fit: cover;
+        }
+
+        .event-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .event-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .event-host {
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .trending-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background-color: var(--haha-orange);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0 auto 15px;
+        }
+
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body>
+    {% include 'partials/navigation.html' %}
+    
+    {% include 'partials/messages.html' %}
+    
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+    
+    {% include 'partials/footer.html' %}
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        // Common JavaScript functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set today's date as default for event creation forms
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0];
+            const dateInputs = document.querySelectorAll('input[type="date"]');
+            dateInputs.forEach(input => {
+                if (!input.value) {
+                    input.value = formattedDate;
+                }
+            });
+            
+            // Chat auto-scroll to bottom
+            const chatContainers = document.querySelectorAll('.chat-container');
+            chatContainers.forEach(container => {
+                container.scrollTop = container.scrollHeight;
+            });
+            
+            // Demo functionality for accepting/declining invites
+            const acceptButtons = document.querySelectorAll('.btn-haha');
+            acceptButtons.forEach(button => {
+                if (button.textContent === 'Accept') {
+                    button.addEventListener('click', function() {
+                        alert('Invitation accepted! You have been added to the event.');
+                    });
+                }
+            });
+            
+            const declineButtons = document.querySelectorAll('.btn-outline-secondary');
+            declineButtons.forEach(button => {
+                if (button.textContent === 'Decline') {
+                    button.addEventListener('click', function() {
+                        alert('Invitation declined.');
+                    });
+                }
+            });
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

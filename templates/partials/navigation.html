@@ -1,0 +1,72 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <style>
+        .haha-logo {
+            font-weight: bold;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #ff6b35, #8a2be2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Fallback for browsers that don't support background-clip:text */
+        @supports not (background-clip: text) {
+            .haha-logo {
+                color: #ff6b35;
+                background: none;
+                -webkit-text-fill-color: initial;
+            }
+        }
+        
+        /* Responsive styling for mobile */
+        @media (max-width: 768px) {
+            .haha-logo {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+    
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'home' %}">
+            <span class="haha-logo">🎉HAHA</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'events' in request.path %}active{% endif %}" href="{% url 'events_list' %}">Events</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'friends' in request.path %}active{% endif %}" href="{% url 'friend_list' %}">Friends</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'chat' in request.path %}active{% endif %}" href="{% url 'chat_rooms' %}">Chats</a>
+                </li>
+            </ul>
+            <div class="d-flex">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'event_create' %}" class="btn btn-haha me-2"><i class="fas fa-plus me-1"></i> Create Event</a>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i> {{ user.username }}
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'profile' user.username %}"><i class="fas fa-user me-2"></i> Profile</a></li>
+                            <li><a class="dropdown-item" href="{% url 'my_events' %}"><i class="fas fa-calendar-alt me-2"></i> My Events</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                        </ul>
+                    </div>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-haha-outline me-2">Log In</a>
+                    <a href="{% url 'register' %}" class="btn btn-haha">Sign Up</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>

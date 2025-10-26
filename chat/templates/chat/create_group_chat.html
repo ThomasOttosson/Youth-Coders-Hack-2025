@@ -1,0 +1,46 @@
+<!-- chat/templates/chat/create_group_chat.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Group Chat - HAHA{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Create Group Chat</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">Group Name</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="text-danger">{{ form.name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.participants.id_for_label }}" class="form-label">Participants</label>
+                            {{ form.participants }}
+                            <div class="form-text">Select friends to add to the group chat</div>
+                            {% if form.participants.errors %}
+                                <div class="text-danger">{{ form.participants.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-haha">Create Group Chat</button>
+                            <a href="{% url 'chat_rooms' %}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <h5><span class="haha-logo">🎉</span> HAHA</h5>
+                <p>The ultimate platform for planning and managing social events and parties with friends.</p>
+            </div>
+            <div class="col-md-2 mb-4">
+                <h5>Quick Links</h5>
+                <ul class="list-unstyled">
+                    <li><a href="{% url 'home' %}" class="text-white-50">Home</a></li>
+                    <li><a href="{% url 'my_events' %}" class="text-white-50">Events</a></li>
+                    <li><a href="{% url 'chat_rooms' %}" class="text-white-50">Chats</a></li>
+                    {% comment %} <li><a href="#" class="text-white-50">About</a></li> {% endcomment %}
+                </ul>
+            </div>
+            <div class="col-md-2 mb-4">
+                <h5>Account</h5>
+                <ul class="list-unstyled">
+                {% if request.user.is_authenticated %}
+                    <li><a href="{% url 'profile' request.user.username %}" class="text-white-50">Profile</a></li>
+                    <li><a href="{% url 'my_events' %}" class="text-white-50">My Events</a></li>
+                    {% comment %} <li><a href="#" class="text-white-50">Settings</a></li> {% endcomment %}
+                    {% comment %} <li><a href="#" class="text-white-50">Help</a></li> {% endcomment %}
+                {% else %}
+                    <li><a href="{% url 'login' %}" class="text-white-50">Login</a></li>
+                    <li><a href="{% url 'register' %}" class="text-white-50">Sign Up</a></li>
+                {% endif %}
+                </ul>
+            </div>
+            <div class="col-md-4 mb-4">
+                <h5>Subscribe to Newsletter</h5>
+                <p>Get updates on new features and events.</p>
+                <div class="input-group">
+                    <input type="email" class="form-control" placeholder="Your email">
+                    <button class="btn btn-haha" type="button">Subscribe</button>
+                </div>
+            </div>
+        </div>
+        <hr class="bg-white">
+        <div class="text-center">
+            <p>&copy; 2025 HAHA. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
