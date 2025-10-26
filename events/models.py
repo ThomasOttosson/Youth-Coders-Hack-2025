@@ -2,6 +2,8 @@ from django.db import models
 from django.conf import settings
 from django.utils import timezone
 
+from cloudinary.models import CloudinaryField
+
 from accounts.models import CustomUser
 
 
@@ -39,7 +41,7 @@ class Event(models.Model):
     rules = models.TextField(blank=True)
     
     # Media
-    image = models.ImageField(upload_to='event_images/', null=True, blank=True)
+    image = CloudinaryField(null=True, blank=True)
     
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)

@@ -19,7 +19,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'fallback-secret-key')
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+
+DEBUG = False
+
+# DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 #from . import env
 
@@ -39,6 +42,8 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'cloudinary',
+    'cloudinary_storage',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -46,8 +51,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'cloudinary',
-    'cloudinary_storage',
     
     # Custom apps
     'accounts',
@@ -142,12 +145,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
-STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
 
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'home'
@@ -162,13 +160,38 @@ CSRF_TRUSTED_ORIGINS = [
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-CLOUDINARY_STORAGE = {
-'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
-'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
-'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
-}
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
+# Use the single Cloudinary URL (recommended for Heroku)
+cloudinary.config(
+    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.getenv('CLOUDINARY_API_KEY'),
+    api_secret=os.getenv('CLOUDINARY_API_SECRET')
+)
 
+print(f"{cloudinary.config}")
+print("Cloud at Work")
+print(os.getenv("CLOUDINARY_CLOUD_NAME"))
+
+import cloudinary
+import cloudinary_storage
+
+# CLOUDINARY_URL = os.getenv("CLOUDINARY_URL")
+
+# print(f"URL: {CLOUDINARY_URL}")
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+STATIC_URL = 'static/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static'), ]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# STATIC_URL = '/static/'
+# STATICFILES_DIRS = [BASE_DIR / 'static']
+# STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
